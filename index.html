@@ -277,7 +277,7 @@
                 </div>
                 
                 <div class="lg:w-1/2 p-12">
-                    <form id="contactForm" class="space-y-6" name="contact" method="POST" action="/merci.html" data-netlify="true" netlify-honeypot="bot-field">
+                    <form id="contactForm" class="space-y-6" name="contact" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field">
                         <input type="hidden" name="form-name" value="contact">
                         <p class="hidden">
                             <label>Ne pas remplir: <input name="bot-field"></label>
@@ -323,6 +323,62 @@
         </div>
     </footer>
 
-    <script></script>
+    <div id="formModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative min-h-screen flex items-center justify-center px-6">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 border-t-4 border-[#b32d2e]">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold uppercase italic text-gray-900">Merci</h3>
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-900" aria-label="Fermer la fenêtre">✕</button>
+                </div>
+                <p id="successMessage" class="mt-4 text-gray-700">Votre message a bien été envoyé. Nous revenons vers vous rapidement.</p>
+                <p id="errorMessage" class="mt-4 text-gray-700 hidden">Une erreur est survenue. Merci de réessayer ou d'appeler au 07.88.30.65.88.</p>
+                <button id="confirmModal" class="mt-6 w-full bg-gray-900 text-white py-3 rounded-lg font-bold hover:bg-[#b32d2e] transition uppercase tracking-widest">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('contactForm');
+        const modal = document.getElementById('formModal');
+        const closeModal = document.getElementById('closeModal');
+        const confirmModal = document.getElementById('confirmModal');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        function openModal(isSuccess) {
+            successMessage.classList.toggle('hidden', !isSuccess);
+            errorMessage.classList.toggle('hidden', isSuccess);
+            modal.classList.remove('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        function hideModal() {
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        closeModal.addEventListener('click', hideModal);
+        confirmModal.addEventListener('click', hideModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideModal();
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) throw new Error('Network error');
+                form.reset();
+                openModal(true);
+            } catch (err) {
+                openModal(false);
+            }
+        });
+    </script>
 </body>
 </html>
