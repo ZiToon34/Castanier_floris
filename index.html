@@ -10,9 +10,8 @@
     <meta name="author" content="Monsieur Floris Castanier">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/logo.jpg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/site.css">
+    <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
     <meta property="og:locale" content="fr_FR">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Castanier Floris | Artisan peintre à Lodève (Hérault)">
@@ -58,8 +57,6 @@
             "image": "/logo.jpg"
         }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --brand-red: #b32d2e;
@@ -67,7 +64,7 @@
         }
         
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
             scroll-behavior: smooth;
         }
 
@@ -121,7 +118,16 @@
                 <a href="#projets" class="hover:text-[#b32d2e] transition">Réalisations</a>
                 <a href="#contact" class="bg-[#b32d2e] text-white px-5 py-2 rounded-full hover:bg-red-800 transition">Devis Gratuit</a>
             </div>
-            <button class="md:hidden text-2xl" aria-label="Ouvrir le menu"><i class="fas fa-bars"></i></button>
+            <button id="mobileMenuButton" class="md:hidden text-2xl" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="mobileMenu"><i class="fas fa-bars"></i></button>
+        </div>
+        <div id="mobileMenu" class="md:hidden hidden border-t bg-white">
+            <div class="px-6 py-4 space-y-3 font-medium">
+                <a href="#accueil" class="block hover:text-[#b32d2e] transition">Accueil</a>
+                <a href="#services" class="block hover:text-[#b32d2e] transition">Services</a>
+                <a href="#histoire" class="block hover:text-[#b32d2e] transition">Notre Histoire</a>
+                <a href="#projets" class="block hover:text-[#b32d2e] transition">Réalisations</a>
+                <a href="#contact" class="inline-flex bg-[#b32d2e] text-white px-5 py-2 rounded-full hover:bg-red-800 transition">Devis Gratuit</a>
+            </div>
         </div>
     </nav>
 
@@ -158,7 +164,7 @@
             </div>
             <div class="relative">
                 <div class="rounded-2xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition duration-500">
-                    <img src="https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&q=80&w=800" alt="Peintre au travail" class="w-full h-auto" loading="eager" fetchpriority="high" decoding="async" width="800" height="600">
+                    <img src="assets/images/hero-peintre.jpg" alt="Peintre au travail" class="w-full h-auto" loading="eager" fetchpriority="high" decoding="async" width="800" height="600">
                 </div>
                 <div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl shadow-xl hidden sm:block">
                     <p class="text-3xl font-bold text-[#b32d2e]"><a href="tel:+33788306588" class="hover:underline">07.88.30.65.88</a></p>
@@ -322,7 +328,7 @@
                 <div class="group relative overflow-hidden rounded-xl h-64">
                     <img src="img/interieur.jpg" alt="Chambre" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy" decoding="async" width="800" height="600">
                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6 text-center">
-                        <p class="font-bold">Rénovation complète intérieur</p>
+                        <p class="font-bold">Rénovation intérieur</p>
                     </div>
                 </div>
                 <div class="group relative overflow-hidden rounded-xl h-64">
@@ -334,7 +340,7 @@
             </div>
         </div>
     </section>
-
+    
     <!-- Contact & Info -->
     <section id="contact" class="py-24">
         <div class="max-w-7xl mx-auto px-6">
@@ -393,7 +399,7 @@
                         </div>
                         <div>
                             <label for="email" class="block text-sm font-bold text-gray-700 mb-2">Email</label>
-                            <input id="email" name="email" type="email" autocomplete="email" required class="w-full px-4 py-3 rounded-lg border focus:border-[#b32d2e] focus:ring-2 focus:ring-red-200 outline-none transition" placeholder="floris.casta@gmail.com">
+                            <input id="email" name="email" type="email" autocomplete="email" required class="w-full px-4 py-3 rounded-lg border focus:border-[#b32d2e] focus:ring-2 focus:ring-red-200 outline-none transition" placeholder="votreemail@email.com">
                         </div>
                         <div>
                             <label for="message" class="block text-sm font-bold text-gray-700 mb-2">Message</label>
@@ -414,7 +420,7 @@
                 <img src="logo.jpg" alt="Logo Castanier Floris" class="w-8 h-8 object-contain" width="32" height="32" loading="lazy" decoding="async">
                 <span class="text-lg font-bold tracking-tighter uppercase italic text-gray-900">Castanier Floris</span>
             </div>
-            <p class="text-gray-500 text-sm">© 2026 Castanier Floris. Tous droits réservés. <a href="mentions-legales.html" class="underline hover:text-[#b32d2e]">Mentions légales</a> | <a href="cookies.html" class="underline hover:text-[#b32d2e]">Politique cookies</a>.</p>
+            <p class="text-gray-500 text-sm">© 2026 Castanier Floris. Tous droits réservés. <a href="mentions-legales.html" class="underline hover:text-[#b32d2e]">Mentions légales</a> | <a href="politique-confidentialite.html" class="underline hover:text-[#b32d2e]">Politique de confidentialité</a> | <a href="cookies.html" class="underline hover:text-[#b32d2e]">Politique cookies</a>.</p>
             <p class="text-gray-500 text-sm mt-2"><button type="button" data-open-cookie-settings class="underline hover:text-[#b32d2e]">Gérer mes cookies</button></p>
             <p class="text-gray-500 text-sm mt-2">Responsable de la publication : <a href="https://www.larzacnumeric.fr" class="underline hover:text-[#b32d2e]" target="_blank" rel="noopener noreferrer">Larzac Numéric</a>.</p>
             <div class="flex justify-center space-x-6 mt-6">
@@ -425,7 +431,7 @@
     </footer>
 
     <div id="formModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
-        <div class="absolute inset-0 bg-black/40"></div>
+        <div id="formModalOverlay" class="absolute inset-0 bg-black/40"></div>
         <div class="relative min-h-screen flex items-center justify-center px-6">
             <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 border-t-4 border-[#b32d2e]">
                 <div class="flex items-center justify-between">
@@ -443,10 +449,23 @@
     <script>
         const form = document.getElementById('contactForm');
         const modal = document.getElementById('formModal');
+        const formModalOverlay = document.getElementById('formModalOverlay');
         const closeModal = document.getElementById('closeModal');
         const confirmModal = document.getElementById('confirmModal');
         const successMessage = document.getElementById('successMessage');
         const errorMessage = document.getElementById('errorMessage');
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const facebookCarousel = document.getElementById('facebookCarousel');
+        const facebookCarouselTrack = document.getElementById('facebookCarouselTrack');
+        const facebookPrev = document.getElementById('facebookPrev');
+        const facebookNext = document.getElementById('facebookNext');
+        const facebookDots = document.getElementById('facebookDots');
+        const facebookStatus = document.getElementById('facebookStatus');
+
+        let facebookPhotos = [];
+        let facebookIndex = 0;
+        let facebookAutoplayTimer = null;
 
         function openModal(isSuccess) {
             successMessage.classList.toggle('hidden', !isSuccess);
@@ -462,9 +481,143 @@
 
         closeModal.addEventListener('click', hideModal);
         confirmModal.addEventListener('click', hideModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) hideModal();
+        formModalOverlay.addEventListener('click', hideModal);
+
+        mobileMenuButton.addEventListener('click', () => {
+            const isOpen = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+            mobileMenu.classList.toggle('hidden', isOpen);
+            mobileMenuButton.setAttribute('aria-expanded', String(!isOpen));
         });
+
+        mobileMenu.querySelectorAll('a').forEach((link) => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                mobileMenuButton.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        function stopFacebookAutoplay() {
+            if (facebookAutoplayTimer) {
+                clearInterval(facebookAutoplayTimer);
+                facebookAutoplayTimer = null;
+            }
+        }
+
+        function startFacebookAutoplay() {
+            stopFacebookAutoplay();
+            if (facebookPhotos.length <= 1) return;
+            facebookAutoplayTimer = setInterval(() => {
+                goToFacebookSlide((facebookIndex + 1) % facebookPhotos.length);
+            }, 6000);
+        }
+
+        function renderFacebookDots() {
+            facebookDots.innerHTML = '';
+            facebookPhotos.forEach((_, idx) => {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'h-2.5 w-2.5 rounded-full transition ' + (idx === facebookIndex ? 'bg-[#b32d2e]' : 'bg-gray-500 hover:bg-gray-300');
+                dot.setAttribute('aria-label', 'Aller à la photo ' + (idx + 1));
+                dot.addEventListener('click', () => goToFacebookSlide(idx));
+                facebookDots.appendChild(dot);
+            });
+        }
+
+        function goToFacebookSlide(nextIndex) {
+            if (!facebookPhotos.length) return;
+            facebookIndex = (nextIndex + facebookPhotos.length) % facebookPhotos.length;
+            facebookCarouselTrack.style.transform = `translateX(-${facebookIndex * 100}%)`;
+            renderFacebookDots();
+        }
+
+        function renderFacebookSlides(photos) {
+            facebookCarouselTrack.innerHTML = '';
+            facebookPhotos = photos;
+            facebookIndex = 0;
+
+            photos.forEach((photo) => {
+                const slide = document.createElement('article');
+                slide.className = 'relative w-full shrink-0 aspect-[16/9]';
+
+                const image = document.createElement('img');
+                image.src = photo.imageUrl;
+                image.alt = photo.caption || 'Photo de réalisation Castanier';
+                image.className = 'h-full w-full object-cover';
+                image.loading = 'lazy';
+                image.decoding = 'async';
+
+                const overlay = document.createElement('div');
+                overlay.className = 'absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent';
+
+                const content = document.createElement('div');
+                content.className = 'absolute inset-x-0 bottom-0 p-6 md:p-8';
+
+                const caption = document.createElement('p');
+                caption.className = 'text-white font-bold text-lg md:text-xl';
+                caption.textContent = photo.caption || 'Dernière réalisation';
+
+                const meta = document.createElement('div');
+                meta.className = 'mt-2 flex items-center gap-4 text-sm text-gray-200';
+
+                const date = document.createElement('span');
+                date.textContent = photo.createdAt || '';
+
+                const link = document.createElement('a');
+                link.href = photo.permalink || 'https://www.facebook.com/p/Castanier-peinture-61575013323195/';
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.className = 'inline-flex items-center gap-2 text-white underline hover:text-[#b32d2e] transition';
+                link.textContent = 'Voir sur Facebook';
+
+                meta.appendChild(date);
+                meta.appendChild(link);
+                content.appendChild(caption);
+                content.appendChild(meta);
+
+                slide.appendChild(image);
+                slide.appendChild(overlay);
+                slide.appendChild(content);
+                facebookCarouselTrack.appendChild(slide);
+            });
+
+            facebookPrev.disabled = photos.length <= 1;
+            facebookNext.disabled = photos.length <= 1;
+            facebookStatus.textContent = photos.length ? `${photos.length} photo${photos.length > 1 ? 's' : ''} chargée${photos.length > 1 ? 's' : ''} depuis Facebook.` : '';
+            renderFacebookDots();
+            goToFacebookSlide(0);
+            startFacebookAutoplay();
+        }
+
+        async function loadFacebookPhotos() {
+            if (!facebookCarouselTrack) return;
+
+            try {
+                const response = await fetch('/.netlify/functions/facebook-photos?limit=12', {
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur API Facebook');
+                }
+
+                const payload = await response.json();
+                const photos = Array.isArray(payload.data) ? payload.data : [];
+                if (!photos.length) throw new Error('Aucune photo disponible');
+                renderFacebookSlides(photos);
+            } catch (error) {
+                facebookCarouselTrack.innerHTML = '<div class="w-full shrink-0 p-10 text-center text-gray-300">Impossible de charger les photos Facebook pour le moment.</div>';
+                facebookPrev.disabled = true;
+                facebookNext.disabled = true;
+                facebookDots.innerHTML = '';
+                facebookStatus.textContent = 'Vérifie la configuration de la clé/token API Facebook.';
+            }
+        }
+
+        facebookPrev.addEventListener('click', () => goToFacebookSlide(facebookIndex - 1));
+        facebookNext.addEventListener('click', () => goToFacebookSlide(facebookIndex + 1));
+        facebookCarousel.addEventListener('mouseenter', stopFacebookAutoplay);
+        facebookCarousel.addEventListener('mouseleave', startFacebookAutoplay);
+        loadFacebookPhotos();
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
