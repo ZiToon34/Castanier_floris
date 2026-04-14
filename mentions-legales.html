@@ -7,13 +7,10 @@
     <meta name="description" content="Mentions légales du site Castanier Floris, artisan peintre à Lodève (Hérault).">
     <meta name="robots" content="index,follow">
     <meta name="theme-color" content="#b32d2e">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles/site.css">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
         }
     </style>
 </head>
@@ -22,7 +19,11 @@
         <div class="max-w-4xl mx-auto px-6 py-8">
             <p class="text-sm text-gray-500">Castanier Floris</p>
             <h1 class="text-3xl md:text-4xl font-extrabold uppercase italic text-gray-900">Mentions légales</h1>
-            <a href="index.html" class="inline-block mt-4 text-[#b32d2e] font-semibold hover:underline">Retour au site</a>
+            <div class="mt-4 flex flex-wrap gap-x-4 gap-y-2">
+                <a href="index.html" class="text-[#b32d2e] font-semibold hover:underline">Retour au site</a>
+                <a href="politique-confidentialite.html" class="text-[#b32d2e] font-semibold hover:underline">Politique de confidentialité</a>
+                <a href="cookies.html" class="text-[#b32d2e] font-semibold hover:underline">Politique cookies</a>
+            </div>
         </div>
     </header>
 
@@ -32,12 +33,12 @@
             <ul class="space-y-2 text-gray-700">
                 <li><span class="font-semibold">Dénomination :</span> MONSIEUR FLORIS CASTANIER</li>
                 <li><span class="font-semibold">Nom commercial :</span> Castanier Floris</li>
-                <li><span class="font-semibold">Adresse :</span> 14 Bd Prosper Gély, 34700 Lodève, France</li>
+                <li><span class="font-semibold">Adresse :</span> 6 Rue du roc, 34700 Lodève, France</li>
                 <li><span class="font-semibold">Téléphone :</span> <a href="tel:+33788306588" class="text-[#b32d2e] hover:underline">07.88.30.65.88</a></li>
-                <li><span class="font-semibold">Email :</span> <a href="mailto:contact@castanier-floris.fr" class="text-[#b32d2e] hover:underline">contact@castanier-floris.fr</a></li>
+                <li><span class="font-semibold">Email :</span> <a href="mailto:floris.casta@gmail.com" class="text-[#b32d2e] hover:underline">floris.casta@gmail.com</a></li>
                 <li><span class="font-semibold">SIRET :</span> 843 504 325 00021</li>
                 <li><span class="font-semibold">Immatriculation RNE :</span> 843 504 325</li>
-                <li><span class="font-semibold">Activité :</span> Artisan peintre</li>
+                <li><span class="font-semibold">Activité :</span> Artisan peintre & tout travaux</li>
             </ul>
         </section>
 
@@ -58,13 +59,15 @@
 
         <section class="bg-white rounded-2xl shadow-sm p-8">
             <h2 class="text-2xl font-bold mb-4">Données personnelles</h2>
-            <p class="text-gray-700">Les informations transmises via le formulaire de contact sont utilisées uniquement pour répondre à votre demande. Elles ne sont ni vendues ni cédées à des tiers. Vous disposez d'un droit d'accès, de rectification, d'opposition, d'effacement et de limitation. Pour exercer ces droits, contactez : contact@castanier-floris.fr.</p>
+            <p class="text-gray-700">Les informations transmises via le formulaire de contact sont utilisées uniquement pour répondre à votre demande. Elles ne sont ni vendues ni cédées à des tiers. Vous disposez d'un droit d'accès, de rectification, d'opposition, d'effacement et de limitation. Pour exercer ces droits, contactez : floris.casta@gmail.com.</p>
             <p class="text-gray-700 mt-3">Les données sont conservées uniquement le temps nécessaire au traitement de la demande.</p>
+            <p class="text-gray-700 mt-3">Consultez le détail sur la <a href="politique-confidentialite.html" class="text-[#b32d2e] hover:underline">Politique de confidentialité</a>.</p>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm p-8">
             <h2 class="text-2xl font-bold mb-4">Cookies et services tiers</h2>
-            <p class="text-gray-700">Le site n'utilise pas de cookies publicitaires. Des services tiers (CDN, polices, bibliothèques) peuvent collecter des données techniques de navigation (adresse IP, User-Agent) à des fins de fonctionnement ou de sécurité.</p>
+            <p class="text-gray-700">Le site n'utilise pas de cookies publicitaires. Les ressources principales (styles, icônes, images) sont auto-hébergées. L'hébergement/formulaire peut toutefois impliquer des traitements techniques (adresse IP, User-Agent) nécessaires au fonctionnement et à la sécurité.</p>
+            <p class="text-gray-700 mt-3">Consultez le détail sur la <a href="cookies.html" class="text-[#b32d2e] hover:underline">Politique cookies</a>.</p>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm p-8">
@@ -72,7 +75,8 @@
             <p class="text-gray-700"><span class="font-semibold">Chambre de Métiers et de l'Artisanat de l'Hérault</span>, ZAC de Pierresvives, 154 Rue Bernard Giraudeau, 34080 Montpellier.</p>
         </section>
 
-        <p class="text-sm text-gray-500">Dernière mise à jour : 10 mars 2026.</p>
+        <p class="text-sm text-gray-500">Dernière mise à jour : 14 avril 2026.</p>
     </main>
+    <script src="cookies-consent.js"></script>
 </body>
 </html>

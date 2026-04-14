@@ -1,0 +1,25 @@
+{
+  "name": "castanier",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cookies-consent.js",
+  "scripts": {
+    "build:css": "tailwindcss -i ./styles/tailwind-input.css -o ./styles/site.css --minify",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZiToon34/Castanier_floris.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ZiToon34/Castanier_floris/issues"
+  },
+  "homepage": "https://github.com/ZiToon34/Castanier_floris#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}
