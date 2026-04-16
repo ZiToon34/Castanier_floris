@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Allow: /favicon.ico
+Disallow: /merci.html
+Disallow: /.netlify/functions/
+
+Sitemap: https://castanier-peinture.fr/sitemap.xml
