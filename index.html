@@ -11,6 +11,14 @@
     <link rel="canonical" href="https://castanier-peinture.fr/">
     <link rel="alternate" hreflang="fr-FR" href="https://castanier-peinture.fr/">
     <link rel="alternate" hreflang="x-default" href="https://castanier-peinture.fr/">
+    <link rel="preload" as="image" href="img/avant1.webp" type="image/webp">
+    <link rel="preload" as="image" href="img/apres1.webp" type="image/webp">
+    <link rel="preload" as="image" href="img/avant2.webp" type="image/webp">
+    <link rel="preload" as="image" href="img/apres2.webp" type="image/webp">
+    <link rel="preload" as="image" href="img/avant3.webp" type="image/webp">
+    <link rel="preload" as="image" href="img/apres3.webp" type="image/webp">
+    <link rel="preload" as="image" href="img/avant4.webp" type="image/webp">
+    <link rel="preload" as="image" href="img/apres4.webp" type="image/webp">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/logo.jpg">
     <link rel="stylesheet" href="styles/site.css">
@@ -420,27 +428,33 @@
                 <div class="mt-4 md:mt-0 italic font-bold text-[#b32d2e]">Le détail fait la différence.</div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="group relative overflow-hidden rounded-xl h-64">
-                    <img src="img/apresmur.jpg" alt="Salon Moderne" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy" decoding="async" width="800" height="600">
-                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6 text-center">
-                        <p class="font-bold">Rénovation complète Façade</p>
+            <div class="relative w-full" id="gridCarousel">
+                <div class="overflow-hidden rounded-xl">
+                    <div id="gridCarouselTrack" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-500">
+                        <!-- Images injectées par JS -->
                     </div>
                 </div>
-                <div class="group relative overflow-hidden rounded-xl h-64">
-                    <img src="img/interieur.jpg" alt="Chambre" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy" decoding="async" width="800" height="600">
-                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6 text-center">
-                        <p class="font-bold">Rénovation intérieur</p>
-                    </div>
-                </div>
-                <div class="group relative overflow-hidden rounded-xl h-64">
-                    <img src="img/maison2.jpg" alt="Cuisine" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy" decoding="async" width="800" height="600">
-                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6 text-center">
-                        <p class="font-bold">Mise en peinture cuisine contemporaine</p>
-                    </div>
+                <div class="flex items-center justify-center gap-4 mt-6">
+                    <button id="gridPrev" type="button" class="bg-[#b32d2e] hover:bg-red-800 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-xl" aria-label="Précédent">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <div id="gridDots" class="flex items-center gap-2"></div>
+                    <button id="gridNext" type="button" class="bg-[#b32d2e] hover:bg-red-800 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-xl" aria-label="Suivant">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
                 </div>
             </div>
 
+            <div class="text-center mb-8" style="padding-top: 2rem;">
+                <p class="text-sm uppercase tracking-widest text-[#b32d2e] font-bold mb-2">Avant / Après</p>
+                <h2 class="text-3xl md:text-4xl font-bold uppercase italic text-white mb-3">
+                    Le résultat <span class="text-[#b32d2e]">parle de lui-même</span>
+                </h2>
+                <p class="text-gray-400 text-sm md:text-base">
+                    <span class="hidden md:inline">Passez la souris sur les photos pour révéler le résultat.</span>
+                    <span class="md:hidden">Appuyez sur une photo pour révéler le résultat.</span>
+                </p>
+            </div>
             <div id="beforeAfterCarousel" class="w-full flex flex-col items-center" style="margin-top: 80px;">
                 <div class="flex items-center justify-center gap-4 w-full px-1">
                     <button id="beforeAfterPrev" type="button" class="shrink-0 bg-[#b32d2e] hover:bg-red-800 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl" aria-label="Projet précédent">
@@ -449,27 +463,46 @@
                     <div class="before-after-frame relative overflow-hidden rounded-xl border border-white/10 min-w-0">
                     <div id="beforeAfterTrack" class="before-after-track">
                         <article class="before-after-card before-after-slide is-active relative">
-                            <img src="img/avant1.jpg" alt="Projet 1 avant travaux" class="before-after-before absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width="900" height="700">
-                            <img src="img/apres1.jpg" alt="Projet 1 après travaux" class="before-after-after absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width="900" height="700">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent pointer-events-none"></div>
+                            <picture class="absolute inset-0 w-full h-full">
+                                <source srcset="img/avant1.webp" type="image/webp">
+                                <img src="img/avant1.jpg" alt="Projet 1 avant travaux" class="before-after-before w-full h-full object-cover" loading="eager" decoding="sync" width="1200" height="1600">
+                            </picture>
+                            <picture class="absolute inset-0 w-full h-full">
+                                <source srcset="img/apres1.webp" type="image/webp">
+                                <img src="img/apres1.jpg" alt="Projet 1 après travaux" class="before-after-after w-full h-full object-cover" loading="eager" decoding="sync" width="1200" height="1600">
+                            </picture>
                         </article>
-
+                        
                         <article class="before-after-card before-after-slide relative">
-                            <img src="img/avant2.jpg" alt="Projet 2 avant travaux" class="before-after-before absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width="900" height="700">
-                            <img src="img/apres2.jpg" alt="Projet 2 après travaux" class="before-after-after absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width="900" height="700">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent pointer-events-none"></div>
+                            <picture class="absolute inset-0 w-full h-full">
+                                <img src="img/avant2.jpg" alt="Projet 2 avant travaux" class="before-after-before w-full h-full object-cover" loading="eager" decoding="sync" width="1200" height="1600">
+                            </picture>
+                            <picture class="absolute inset-0 w-full h-full">
+                                <source srcset="img/apres2.webp" type="image/webp">
+                                <img src="img/apres2.jpg" alt="Projet 2 après travaux" class="before-after-after w-full h-full object-cover" loading="eager" decoding="sync" width="1200" height="1600">
+                            </picture>
                         </article>
-
+                        
                         <article class="before-after-card before-after-slide relative">
-                            <img src="img/avant3.jpg" alt="Projet 3 avant travaux" class="before-after-before absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width="900" height="700">
-                            <img src="img/apres3.jpg" alt="Projet 3 après travaux" class="before-after-after absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width="900" height="700">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent pointer-events-none"></div>
+                            <picture class="absolute inset-0 w-full h-full">
+                                <source srcset="img/avant3.webp" type="image/webp">
+                                <img src="img/avant3.jpg" alt="Projet 3 avant travaux" class="before-after-before w-full h-full object-cover" loading="eager" decoding="sync" width="1200" height="1600">
+                            </picture>
+                            <picture class="absolute inset-0 w-full h-full">
+                                <source srcset="img/apres3.webp" type="image/webp">
+                                <img src="img/apres3.jpg" alt="Projet 3 après travaux" class="before-after-after w-full h-full object-cover" loading="eager" decoding="sync" width="1200" height="1600">
+                            </picture>
                         </article>
-
+                        
                         <article class="before-after-card before-after-slide relative">
-                            <img src="img/avant4.jpg" alt="Projet 4 avant travaux" class="before-after-before absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width="900" height="700">
-                            <img src="img/apres4.jpg" alt="Projet 4 après travaux" class="before-after-after absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width="900" height="700">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent pointer-events-none"></div>
+                            <picture class="absolute inset-0 w-full h-full">
+                                <source srcset="img/avant4.webp" type="image/webp">
+                                <img src="img/avant4.jpg" alt="Projet 4 avant travaux" class="before-after-before w-full h-full object-cover" loading="eager" decoding="sync" width="1200" height="900">
+                            </picture>
+                            <picture class="absolute inset-0 w-full h-full">
+                                <source srcset="img/apres4.webp" type="image/webp">
+                                <img src="img/apres4.jpg" alt="Projet 4 après travaux" class="before-after-after w-full h-full object-cover" loading="eager" decoding="sync" width="1200" height="900">
+                            </picture>
                         </article>
                     </div>
                     </div>
@@ -860,6 +893,82 @@
                 openModal(false);
             }
         });
+
+        (function () {
+    const track = document.getElementById('gridCarouselTrack');
+    const dotsContainer = document.getElementById('gridDots');
+    const prevBtn = document.getElementById('gridPrev');
+    const nextBtn = document.getElementById('gridNext');
+
+    // Charge les images en testant 1.jpg, 2.jpg... jusqu'à 404
+    function loadImages(callback) {
+        const images = [];
+        let i = 1;
+        function tryNext() {
+            const img = new Image();
+            img.onload = () => { images.push(i); i++; tryNext(); };
+            img.onerror = () => callback(images);
+            img.src = `img/carousel/${i}.jpg`;
+        }
+        tryNext();
+    }
+
+    function getPerPage() {
+        if (window.innerWidth >= 1024) return 3;
+        if (window.innerWidth >= 768) return 2;
+        return 1;
+    }
+
+    let allImages = [];
+    let currentPage = 0;
+    let perPage = getPerPage();
+
+    function totalPages() {
+        return Math.ceil(allImages.length / perPage);
+    }
+
+    function render() {
+        perPage = getPerPage();
+        const start = currentPage * perPage;
+        const slice = allImages.slice(start, start + perPage);
+
+        track.style.opacity = '0';
+        setTimeout(() => {
+            track.innerHTML = slice.map(n => `
+                <div class="group relative overflow-hidden rounded-xl h-64">
+                    <img src="img/carousel/${n}.jpg" alt="Réalisation ${n}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy" decoding="async" width="800" height="600">
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6 text-center"></div>
+                </div>
+            `).join('');
+            track.style.opacity = '1';
+            renderDots();
+        }, 250);
+    }
+
+    function renderDots() {
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < totalPages(); i++) {
+            const dot = document.createElement('button');
+            dot.className = 'h-2.5 w-2.5 rounded-full transition ' + (i === currentPage ? 'bg-[#b32d2e]' : 'bg-gray-500 hover:bg-gray-300');
+            dot.addEventListener('click', () => { currentPage = i; render(); });
+            dotsContainer.appendChild(dot);
+        }
+    }
+
+    function goTo(page) {
+        currentPage = (page + totalPages()) % totalPages();
+        render();
+    }
+
+    prevBtn.addEventListener('click', () => goTo(currentPage - 1));
+    nextBtn.addEventListener('click', () => goTo(currentPage + 1));
+    window.addEventListener('resize', () => { perPage = getPerPage(); currentPage = 0; render(); });
+
+    loadImages(imgs => {
+        allImages = imgs;
+        render();
+    });
+})();
     </script>
 </body>
 </html>
