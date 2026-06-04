@@ -1,112 +1,139 @@
 {
-    "sections": [
-      {
-        "id": "hero",
-        "label": "Bannière principale",
-        "fields": [
-          {
-            "id": "title",
-            "label": "Titre principal",
-            "type": "text",
-            "value": "Artisan Peintre"
-          },
-          {
-            "id": "subtitle",
-            "label": "Sous-titre",
-            "type": "text",
-            "value": "Peinture intérieure & extérieure, décoration, enduits et ravalement."
-          },
-          {
-            "id": "badge",
-            "label": "Badge (ex: Devis gratuit)",
-            "type": "text",
-            "value": "Devis gratuit sous 24h"
-          }
-        ]
-      },
-      {
-        "id": "services",
-        "label": "Services",
-        "fields": [
-          {
-            "id": "service1",
-            "label": "Service 1",
-            "type": "text",
-            "value": "Peinture intérieure"
-          },
-          {
-            "id": "service2",
-            "label": "Service 2",
-            "type": "text",
-            "value": "Peinture extérieure"
-          },
-          {
-            "id": "service3",
-            "label": "Service 3",
-            "type": "text",
-            "value": "Enduits & Ravalement"
-          },
-          {
-            "id": "service4",
-            "label": "Service 4",
-            "type": "text",
-            "value": "Décoration"
-          }
-        ]
-      },
-      {
-        "id": "gallery",
-        "label": "Galerie réalisations",
-        "fields": [
-          {
-            "id": "photos",
-            "label": "Photos du carousel",
-            "type": "image-list",
-            "value": []
-          }
-        ]
-      },
-      {
-        "id": "contact",
-        "label": "Contact",
-        "fields": [
-          {
-            "id": "phone",
-            "label": "Téléphone",
-            "type": "text",
-            "value": "07 88 30 65 88"
-          },
-          {
-            "id": "email",
-            "label": "Email",
-            "type": "text",
-            "value": "floris.casta@gmail.com"
-          },
-          {
-            "id": "address",
-            "label": "Adresse",
-            "type": "text",
-            "value": "6 Rue du roc, 34700 Lodève"
-          }
-        ]
-      },
-      {
-        "id": "social",
-        "label": "Réseaux sociaux",
-        "fields": [
-          {
-            "id": "facebook",
-            "label": "Lien Facebook",
-            "type": "text",
-            "value": "https://www.facebook.com/p/Castanier-peinture-61575013323195/"
-          },
-          {
-            "id": "instagram",
-            "label": "Lien Instagram",
-            "type": "text",
-            "value": "https://www.instagram.com/castanier_peinture/"
-          }
-        ]
-      }
-    ]
-  }
+  "sections": [
+    {
+      "id": "hero",
+      "label": "Bannière principale",
+      "fields": [
+        {
+          "id": "title",
+          "label": "Titre principal",
+          "type": "text",
+          "value": "Artisan Peintre"
+        },
+        {
+          "id": "subtitle",
+          "label": "Sous-titre",
+          "type": "text",
+          "value": "Peinture intérieure & extérieure, décoration, enduits et ravalement."
+        },
+        {
+          "id": "badge",
+          "label": "Badge (ex: Devis gratuit)",
+          "type": "text",
+          "value": "Devis gratuit sous 24h"
+        }
+      ]
+    },
+    {
+      "id": "services",
+      "label": "Services",
+      "fields": [
+        {
+          "id": "service1",
+          "label": "Service 1",
+          "type": "text",
+          "value": "Peinture intérieure"
+        },
+        {
+          "id": "service2",
+          "label": "Service 2",
+          "type": "text",
+          "value": "Peinture extérieure"
+        },
+        {
+          "id": "service3",
+          "label": "Service 3",
+          "type": "text",
+          "value": "Enduits & Ravalement"
+        },
+        {
+          "id": "service4",
+          "label": "Service 4",
+          "type": "text",
+          "value": "Décoration"
+        }
+      ]
+    },
+    {
+      "id": "gallery",
+      "label": "Galerie réalisations",
+      "fields": [
+        {
+          "id": "photos",
+          "label": "Photos du carousel",
+          "type": "image-list",
+          "value": [
+            "1.jpg",
+            "2.jpg",
+            "3.jpg",
+            "4.jpg",
+            "5.jpg",
+            "6.jpg",
+            "7.jpg",
+            "8.jpg",
+            "9.jpg",
+            "10.jpg",
+            "11.jpg",
+            "12.jpg",
+            "13.jpg",
+            "14.jpg",
+            "15.jpg",
+            "16.jpg",
+            "17.jpg",
+            "18.jpg",
+            "19.jpg",
+            "20.jpg",
+            "21.jpg",
+            "22.jpg",
+            "23.jpg",
+            "24.jpg",
+            "25.jpg",
+            "26.jpg"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "label": "Contact",
+      "fields": [
+        {
+          "id": "phone",
+          "label": "Téléphone",
+          "type": "text",
+          "value": "07 88 30 65 88"
+        },
+        {
+          "id": "email",
+          "label": "Email",
+          "type": "text",
+          "value": "floris.casta@gmail.com"
+        },
+        {
+          "id": "address",
+          "label": "Adresse",
+          "type": "text",
+          "value": "6 Rue du roc, 34700 Lodève"
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "label": "Réseaux sociaux",
+      "fields": [
+        {
+          "id": "facebook",
+          "label": "Lien Facebook",
+          "type": "text",
+          "value": "https://www.facebook.com/p/Castanier-peinture-61575013323195/"
+        },
+        {
+          "id": "instagram",
+          "label": "Lien Instagram",
+          "type": "text",
+          "value": "https://www.instagram.com/castanier_peinture/"
+        }
+      ]
+    }
+  ]
+}
