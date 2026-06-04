@@ -1118,10 +1118,7 @@ loadContent()
     nextBtn.addEventListener('click', () => goTo(currentPage + 1));
     window.addEventListener('resize', () => { perPage = getPerPage(); currentPage = 0; render(); });
 
-    loadImages(imgs => {
-        allImages = imgs;
-        render();
-    });
+    
 })();
     </script>
 </body>
