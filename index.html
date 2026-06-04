@@ -647,6 +647,101 @@
 
     <script src="cookies-consent.js"></script>
     <script>
+        // ==============================
+// CONFIGURATION GITHUB
+// ==============================
+const GITHUB_USER = "ZiToon34"
+const GITHUB_REPO = "Castanier_floris"
+const BRANCH = "main"
+const RAW = (file) => `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${file}?t=${Date.now()}`
+
+// ==============================
+// CHARGER LE CONTENU
+// ==============================
+async function loadContent() {
+    try {
+        const res = await fetch(RAW("content.json"))
+        const data = await res.json()
+        data.sections.forEach(section => {
+            if (section.id === "hero") applyHero(section.fields)
+            if (section.id === "services") applyServices(section.fields)
+            if (section.id === "gallery") applyGallery(section.fields)
+            if (section.id === "contact") applyContact(section.fields)
+            if (section.id === "social") applySocial(section.fields)
+        })
+    } catch (err) {
+        console.error("Erreur chargement content.json", err)
+    }
+}
+
+function getField(fields, id) {
+    return fields.find(f => f.id === id)?.value || ""
+}
+
+function applyHero(fields) {
+    const title = getField(fields, "title")
+    const subtitle = getField(fields, "subtitle")
+    const badge = getField(fields, "badge")
+    if (title) document.querySelector('#accueil h1 .text-\\[\\#b32d2e\\]').textContent = title
+    if (subtitle) document.querySelector('#accueil .text-xl.text-gray-600').textContent = subtitle
+    if (badge) {
+        const badges = document.querySelectorAll('#accueil .flex.items-center .fas.fa-check-circle')
+        if (badges.length > 0) badges[0].nextSibling.textContent = " " + badge
+    }
+}
+
+function applyServices(fields) {
+    const serviceCards = document.querySelectorAll('#services .grid.md\\:grid-cols-3 > div')
+    for (let i = 1; i <= 4; i++) {
+        const title = getField(fields, `service${i}`)
+        if (title && serviceCards[i-1]) {
+            const h3 = serviceCards[i-1].querySelector('h3')
+            if (h3) h3.textContent = title
+        }
+    }
+}
+
+function applyGallery(fields) {
+    const photos = fields.find(f => f.id === "photos")?.value || []
+    if (!photos.length) return
+    const track = document.getElementById("gridCarouselTrack")
+    if (!track) return
+
+    // Remplacer le chargement automatique par nos photos
+    window._cmsPhotos = photos
+    window._cmsRaw = RAW
+}
+
+function applyContact(fields) {
+    const phone = getField(fields, "phone")
+    const email = getField(fields, "email")
+    const address = getField(fields, "address")
+    if (phone) {
+        document.querySelectorAll('a[href^="tel:"]').forEach(el => {
+            el.href = `tel:${phone.replace(/\s/g, "")}`
+            if (el.textContent.includes(".")) el.textContent = phone
+        })
+        document.querySelectorAll('.text-xl.font-bold').forEach(el => {
+            if (el.closest('.flex.items-center') && el.previousElementSibling?.querySelector('.fa-phone')) {
+                el.textContent = phone
+            }
+        })
+    }
+    if (address) {
+        document.querySelectorAll('.text-xl.font-bold').forEach(el => {
+            if (el.textContent.includes("Rue du roc")) el.textContent = address
+        })
+    }
+}
+
+function applySocial(fields) {
+    const facebook = getField(fields, "facebook")
+    const instagram = getField(fields, "instagram")
+    if (facebook) document.querySelectorAll('a[href*="facebook"]').forEach(el => el.href = facebook)
+    if (instagram) document.querySelectorAll('a[href*="instagram"]').forEach(el => el.href = instagram)
+}
+
+loadContent()
         const form = document.getElementById('contactForm');
         const modal = document.getElementById('formModal');
         const formModalOverlay = document.getElementById('formModalOverlay');
@@ -901,17 +996,76 @@
     const nextBtn = document.getElementById('gridNext');
 
     // Charge les images en testant 1.jpg, 2.jpg... jusqu'à 404
-    function loadImages(callback) {
-        const images = [];
-        let i = 1;
-        function tryNext() {
-            const img = new Image();
-            img.onload = () => { images.push(i); i++; tryNext(); };
-            img.onerror = () => callback(images);
-            img.src = `img/carousel/${i}.jpg`;
-        }
-        tryNext();
+    (function () {
+    const track = document.getElementById('gridCarouselTrack');
+    const dotsContainer = document.getElementById('gridDots');
+    const prevBtn = document.getElementById('gridPrev');
+    const nextBtn = document.getElementById('gridNext');
+
+    function getPerPage() {
+        if (window.innerWidth >= 1024) return 3;
+        if (window.innerWidth >= 768) return 2;
+        return 1;
     }
+
+    let allImages = [];
+    let currentPage = 0;
+    let perPage = getPerPage();
+
+    function totalPages() {
+        return Math.ceil(allImages.length / perPage);
+    }
+
+    function render() {
+        perPage = getPerPage();
+        const start = currentPage * perPage;
+        const slice = allImages.slice(start, start + perPage);
+        track.style.opacity = '0';
+        setTimeout(() => {
+            track.innerHTML = slice.map(n => `
+                <div class="group relative overflow-hidden rounded-xl h-64">
+                    <img src="${window._cmsRaw ? window._cmsRaw('images/' + n) : 'images/' + n}" 
+                        alt="Réalisation" 
+                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
+                        loading="lazy" decoding="async" width="800" height="600">
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6 text-center"></div>
+                </div>
+            `).join('');
+            track.style.opacity = '1';
+            renderDots();
+        }, 250);
+    }
+
+    function renderDots() {
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < totalPages(); i++) {
+            const dot = document.createElement('button');
+            dot.className = 'h-2.5 w-2.5 rounded-full transition ' + (i === currentPage ? 'bg-[#b32d2e]' : 'bg-gray-500 hover:bg-gray-300');
+            dot.addEventListener('click', () => { currentPage = i; render(); });
+            dotsContainer.appendChild(dot);
+        }
+    }
+
+    function goTo(page) {
+        currentPage = (page + totalPages()) % totalPages();
+        render();
+    }
+
+    prevBtn.addEventListener('click', () => goTo(currentPage - 1));
+    nextBtn.addEventListener('click', () => goTo(currentPage + 1));
+    window.addEventListener('resize', () => { perPage = getPerPage(); currentPage = 0; render(); });
+
+    // Attendre que loadContent() ait chargé les photos
+    function waitAndLoad() {
+        if (window._cmsPhotos) {
+            allImages = window._cmsPhotos
+            render()
+        } else {
+            setTimeout(waitAndLoad, 100)
+        }
+    }
+    waitAndLoad()
+})();
 
     function getPerPage() {
         if (window.innerWidth >= 1024) return 3;
