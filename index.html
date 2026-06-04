@@ -703,13 +703,7 @@ function applyServices(fields) {
 
 function applyGallery(fields) {
     const photos = fields.find(f => f.id === "photos")?.value || []
-    if (!photos.length) return
-    const track = document.getElementById("gridCarouselTrack")
-    if (!track) return
-
-    // Remplacer le chargement automatique par nos photos
     window._cmsPhotos = photos
-    window._cmsRaw = RAW
 }
 
 function applyContact(fields) {
@@ -1013,20 +1007,30 @@ loadContent()
     let perPage = getPerPage();
 
     function totalPages() {
-        return Math.ceil(allImages.length / perPage);
+        return Math.max(1, Math.ceil(allImages.length / perPage));
+    }
+
+    function getImageUrl(filename) {
+        // Utilise l'URL sans timestamp pour éviter les rechargements
+        return `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/images/${filename}`
     }
 
     function render() {
         perPage = getPerPage();
+        if (!allImages.length) {
+            track.innerHTML = '<p class="text-gray-400 col-span-full text-center py-10">Aucune photo pour le moment.</p>'
+            dotsContainer.innerHTML = ''
+            return
+        }
         const start = currentPage * perPage;
         const slice = allImages.slice(start, start + perPage);
         track.style.opacity = '0';
         setTimeout(() => {
-            track.innerHTML = slice.map(n => `
+            track.innerHTML = slice.map(filename => `
                 <div class="group relative overflow-hidden rounded-xl h-64">
-                    <img src="${window._cmsRaw ? window._cmsRaw('images/' + n) : 'images/' + n}" 
-                        alt="Réalisation" 
-                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
+                    <img src="${getImageUrl(filename)}"
+                        alt="Réalisation"
+                        class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                         loading="lazy" decoding="async" width="800" height="600">
                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6 text-center"></div>
                 </div>
@@ -1055,9 +1059,8 @@ loadContent()
     nextBtn.addEventListener('click', () => goTo(currentPage + 1));
     window.addEventListener('resize', () => { perPage = getPerPage(); currentPage = 0; render(); });
 
-    // Attendre que loadContent() ait chargé les photos
     function waitAndLoad() {
-        if (window._cmsPhotos) {
+        if (window._cmsPhotos !== undefined) {
             allImages = window._cmsPhotos
             render()
         } else {
