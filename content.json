@@ -63,7 +63,6 @@
           "label": "Photos du carousel",
           "type": "image-list",
           "value": [
-            "1.jpg",
             "2.jpg",
             "3.jpg",
             "4.jpg",
