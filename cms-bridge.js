@@ -95,15 +95,18 @@
   // -------------------------------------------------------
   // SURLIGNAGE AU SURVOL
   // -------------------------------------------------------
+  // Le cadre eclaire la zone survolee et assombrit tout le reste
+  // grace a une ombre portee demesuree (effet projecteur).
   var cadre = document.createElement("div")
   cadre.style.cssText = [
     "position:fixed",
     "z-index:2147483646",
     "pointer-events:none",
-    "border:2px solid #1E5F8C",
-    "border-radius:6px",
-    "background:rgba(30,95,140,0.08)",
-    "transition:all .12s ease",
+    "border:3px solid #1E5F8C",
+    "border-radius:8px",
+    "background:rgba(30,95,140,0.06)",
+    "box-shadow:0 0 0 9999px rgba(15,23,42,0.42)",
+    "transition:all .14s ease",
     "display:none",
   ].join(";")
 
@@ -114,10 +117,11 @@
     "pointer-events:none",
     "background:#1E5F8C",
     "color:#fff",
-    "font:500 11px/1 system-ui,sans-serif",
-    "padding:5px 9px",
-    "border-radius:5px",
+    "font:600 13px/1.25 system-ui,-apple-system,sans-serif",
+    "padding:8px 14px",
+    "border-radius:8px",
     "white-space:nowrap",
+    "box-shadow:0 4px 14px rgba(15,23,42,.45)",
     "display:none",
   ].join(";")
 
@@ -125,6 +129,8 @@
     document.body.appendChild(cadre)
     document.body.appendChild(etiquette)
   })
+
+  var derniereZone = null
 
   function surligner(zone, nom) {
     if (!zone) return masquer()
@@ -138,16 +144,18 @@
     etiquette.textContent = nom
     etiquette.style.display = "block"
     // L'etiquette se place au-dessus, ou dedans si la zone touche le haut
-    etiquette.style.top = (r.top > 26 ? r.top - 24 : r.top + 6) + "px"
-    etiquette.style.left = Math.max(6, r.left + 6) + "px"
+    etiquette.style.top = (r.top > 44 ? r.top - 40 : r.top + 10) + "px"
+    etiquette.style.left = Math.max(8, r.left + 8) + "px"
+
+    // La zone devient cliquable a l'oeil : curseur en forme de main
+    zone.style.cursor = "pointer"
   }
 
   function masquer() {
     cadre.style.display = "none"
     etiquette.style.display = "none"
+    if (derniereZone) derniereZone.style.cursor = ""
   }
-
-  var derniereZone = null
 
   document.addEventListener("mouseover", function (e) {
     var id = rubriqueDe(e.target)
@@ -158,7 +166,7 @@
     var zone = zoneDe(id)
     if (zone === derniereZone) return
     derniereZone = zone
-    surligner(zone, "Modifier : " + (libelles[id] || id))
+    surligner(zone, "\u270F\uFE0F  Cliquez pour modifier \u00B7 " + (libelles[id] || id))
   })
 
   document.addEventListener("mouseleave", masquer)
@@ -193,7 +201,7 @@
       var zone = zoneDe(d.section)
       if (!zone) return
       zone.scrollIntoView({ behavior: "smooth", block: "center" })
-      surligner(zone, "Modifier : " + (libelles[d.section] || d.section))
+      surligner(zone, "\u270F\uFE0F  Cliquez pour modifier \u00B7 " + (libelles[d.section] || d.section))
       setTimeout(masquer, 2200)
     }
   })
