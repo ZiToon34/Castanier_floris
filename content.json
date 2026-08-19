@@ -63,10 +63,8 @@
           "label": "Photos du carousel",
           "type": "image-list",
           "value": [
-            "1.jpg",
             "2.jpg",
             "3.jpg",
-            "4.jpg",
             "5.jpg",
             "6.jpg",
             "7.jpg",
@@ -87,8 +85,16 @@
             "22.jpg",
             "23.jpg",
             "24.jpg",
-            "25.jpg",
-            "26.jpg"
+            "26.jpg",
+            "IMG_6736.jpg",
+            "IMG_1185.jpg",
+            "IMG_1186.jpg",
+            "IMG_1324.jpg",
+            "IMG_1363.jpg",
+            "IMG_1319.jpg",
+            "IMG_1361.jpg",
+            "IMG_1322.jpg",
+            "IMG_1365.jpg"
           ]
         }
       ]
