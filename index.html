@@ -243,7 +243,7 @@
 
     <main>
     <!-- Hero Section -->
-    <section id="accueil" class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <section id="accueil" data-cms="hero" class="relative min-h-screen flex items-center pt-20 overflow-hidden">
         <div class="absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-full opacity-10 hidden lg:block">
              <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <path fill="#b32d2e" d="M44.7,-76.4C58.1,-69.2,69.2,-58.1,76.4,-44.7C83.6,-31.3,86.9,-15.6,85.2,-0.9C83.6,13.7,77.1,27.5,69.9,40.9C62.7,54.3,54.9,67.3,43.3,74.5C31.7,81.7,15.8,83.1,0.5,82.2C-14.8,81.3,-29.6,78.2,-43.1,71.7C-56.5,65.2,-68.6,55.3,-76.3,42.5C-84,29.8,-87.3,14.9,-86.3,0.6C-85.3,-13.7,-80,-27.4,-72,-39.6C-64,-51.7,-53.4,-62.3,-41,-70.1C-28.7,-77.9,-14.3,-82.9,0.7,-84.2C15.8,-85.5,31.3,-83.5,44.7,-76.4Z" transform="translate(100 100)" />
@@ -418,7 +418,7 @@
     </section>
 
     <!-- Project Gallery -->
-    <section id="projets" class="py-24 bg-gray-900 text-white">
+	<section id="projets" data-cms="gallery" class="py-24 bg-gray-900 text-white">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
                 <div>
@@ -614,7 +614,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-100 py-12 border-t">
+	<footer data-cms="social" class="bg-gray-100 py-12 border-t">
         <div class="max-w-7xl mx-auto px-6 text-center">
             <div class="flex items-center justify-center space-x-2 mb-6">
                 <img src="logo.jpg" alt="Logo Castanier Floris" class="w-8 h-8 object-contain" width="32" height="32" loading="lazy" decoding="async">
@@ -905,5 +905,6 @@ if (beforeAfterTrack && beforeAfterPrev && beforeAfterNext && beforeAfterCards.l
     waitAndLoad()
 })()
     </script>
+    <script defer src="cms-bridge.js"></script>
 </body>
 </html>
