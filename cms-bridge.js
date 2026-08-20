@@ -55,6 +55,20 @@
       return noeud.getAttribute("data-cms")
     }
 
+    // Le noeud porte lui-meme une liaison : "tarifs.cotisations" -> "tarifs"
+    var propre = liaisonDuNoeud(noeud)
+    if (propre) return propre
+
+    // Sinon, une liaison est peut-etre presente a l'interieur
+    if (noeud.querySelector) {
+      var dedans = noeud.querySelector(SELECTEUR_LIAISONS)
+      if (dedans) {
+        var trouvee = liaisonDuNoeud(dedans)
+        if (trouvee) return trouvee
+      }
+    }
+
+    // Ancienne methode : identifiants prefixes par le nom de la rubrique
     for (var i = 0; i < rubriques.length; i++) {
       var id = rubriques[i]
       if (noeud.id === id) return id
@@ -63,6 +77,27 @@
         noeud.querySelector('[id^="' + id + '-"], [id^="' + id + '_"]')
       ) {
         return id
+      }
+    }
+    return null
+  }
+
+  /**
+   * Attributs poses sur les pages pour indiquer quel champ afficher.
+   * Leur valeur est de la forme "rubrique.champ" : le prefixe donne
+   * donc directement la rubrique a ouvrir.
+   */
+  var ATTRIBUTS_LIAISON = "data-cms-text,data-cms-html,data-cms-img,data-cms-bg,data-cms-href,data-cms-tel,data-cms-mail,data-cms-wa,data-cms-gallery,data-cms-list".split(",")
+  var SELECTEUR_LIAISONS = "[data-cms-text],[data-cms-html],[data-cms-img],[data-cms-bg],[data-cms-href],[data-cms-tel],[data-cms-mail],[data-cms-wa],[data-cms-gallery],[data-cms-list]"
+
+  /** Renvoie la rubrique portee par un noeud, via ses attributs de liaison */
+  function liaisonDuNoeud(noeud) {
+    if (!noeud || !noeud.getAttribute) return null
+    for (var i = 0; i < ATTRIBUTS_LIAISON.length; i++) {
+      var v = noeud.getAttribute(ATTRIBUTS_LIAISON[i])
+      if (v && v.indexOf(".") > 0) {
+        var rubrique = v.split(".")[0]
+        if (rubriques.indexOf(rubrique) !== -1) return rubrique
       }
     }
     return null
@@ -85,6 +120,10 @@
     if (marquee) return marquee
 
     var repere =
+      document.querySelector('[data-cms-text^="' + id + '."], ' +
+                             '[data-cms-list^="' + id + '."], ' +
+                             '[data-cms-gallery^="' + id + '."], ' +
+                             '[data-cms-img^="' + id + '."]') ||
       document.getElementById(id) ||
       document.querySelector('[id^="' + id + '-"], [id^="' + id + '_"]')
     if (!repere) return null
@@ -174,6 +213,19 @@
     if (derniereZone) surligner(derniereZone, etiquette.textContent)
   })
 
+  /** Eclair vert de confirmation : la zone choisie clignote une fois */
+  function confirmer(zone, nom) {
+    if (!zone) return
+    surligner(zone, "\u2714\uFE0F  " + nom)
+    cadre.style.borderColor = "#15803D"
+    cadre.style.background = "rgba(21,128,61,0.12)"
+    setTimeout(function () {
+      cadre.style.borderColor = "#1E5F8C"
+      cadre.style.background = "rgba(30,95,140,0.06)"
+      masquer()
+    }, 550)
+  }
+
   // -------------------------------------------------------
   // CLIC : ouvrir la rubrique dans Mon CMS
   // -------------------------------------------------------
@@ -184,9 +236,34 @@
       if (e.target.closest && e.target.closest("a[href]")) return
 
       var id = rubriqueDe(e.target)
-      if (id) envoyer({ type: "select", section: id })
+      if (!id) return
+
+      confirmer(zoneDe(id), libelles[id] || id)
+      envoyer({ type: "select", section: id })
     },
     true
+  )
+
+  // -------------------------------------------------------
+  // ECRANS TACTILES
+  // Il n'y a pas de survol sur telephone : on montre la zone
+  // des que le doigt se pose, avant meme le relachement.
+  // -------------------------------------------------------
+  document.addEventListener(
+    "touchstart",
+    function (e) {
+      var cible = e.touches && e.touches[0] ? e.touches[0].target : e.target
+      if (!cible || !cible.closest) return
+      if (cible.closest("a[href]")) return
+
+      var id = rubriqueDe(cible)
+      if (!id) return
+
+      var zone = zoneDe(id)
+      derniereZone = zone
+      surligner(zone, "\u270F\uFE0F  Modifier \u00B7 " + (libelles[id] || id))
+    },
+    { passive: true, capture: true }
   )
 
   // -------------------------------------------------------
