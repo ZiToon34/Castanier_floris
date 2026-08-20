@@ -225,7 +225,7 @@
                 <a href="#accueil" class="hover:text-[#b32d2e] transition">Accueil</a>
                 <a href="#services" class="hover:text-[#b32d2e] transition">Services</a>
                 <a href="#histoire" class="hover:text-[#b32d2e] transition">Notre Histoire</a>
-                <a href="#projets" class="hover:text-[#b32d2e] transition">Réalisations</a>
+                <a href="#projets" data-cms-zone="hero.btn1" class="hover:text-[#b32d2e] transition">Réalisations</a>
                 <a href="#contact" class="bg-[#b32d2e] text-white px-5 py-2 rounded-full hover:bg-red-800 transition">Devis Gratuit</a>
             </div>
             <button id="mobileMenuButton" class="md:hidden text-2xl" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="mobileMenu"><i class="fas fa-bars"></i></button>
@@ -278,7 +278,7 @@
                 </div>
                 <div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl shadow-xl hidden sm:block">
                     <p class="text-3xl font-bold text-[#b32d2e]"><a href="tel:+33788306588" class="hover:underline">07.88.30.65.88</a></p>
-                    <p class="text-gray-500 text-sm uppercase tracking-widest">Contact Direct</p>
+                    <p class="text-gray-500 text-sm uppercase tracking-widest" data-cms-text="hero.contact_label">Contact Direct</p>
                 </div>
             </div>
         </div>
@@ -288,11 +288,11 @@
     <section id="services" class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4 uppercase italic">Nos <span class="brush-accent">Prestations</span></h2>
-                <p class="text-gray-500 max-w-2xl mx-auto">De la préparation des supports aux finitions les plus délicates, nous intervenons sur tous types de chantiers.</p>
+                <h2 class="text-3xl md:text-5xl font-bold mb-4 uppercase italic" data-cms-zone="services.title">Nos <span class="brush-accent">Prestations</span></h2>
+                <p class="text-gray-500 max-w-2xl mx-auto" data-cms-text="services.intro">De la préparation des supports aux finitions les plus délicates, nous intervenons sur tous types de chantiers.</p>
             </div>
             
-            <div class="grid md:grid-cols-3 gap-8">
+            <div class="grid md:grid-cols-3 gap-8" data-cms-zone="services.liste">
                 <!-- Service 1 -->
                 <div class="p-8 bg-gray-50 rounded-2xl card-hover border-t-4 border-[#b32d2e]">
                     <div class="w-14 h-14 bg-red-100 flex items-center justify-center rounded-lg mb-6 text-[#b32d2e] text-2xl">
@@ -342,7 +342,7 @@
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-start">
             <div>
                 <p class="text-sm uppercase tracking-widest text-[#b32d2e] font-bold">Notre Histoire</p>
-                <h2 class="text-3xl md:text-5xl font-bold mt-3 mb-6 uppercase italic">Un métier de <span class="brush-accent">passion</span></h2>
+                <h2 class="text-3xl md:text-5xl font-bold mt-3 mb-6 uppercase italic" data-cms-zone="histoire.title">Un métier de <span class="brush-accent">passion</span></h2>
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-8 mb-8">
                     <p class="text-gray-700 leading-relaxed">
                         L’entreprise Castanier est avant tout une histoire de famille.
@@ -383,8 +383,8 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-[#b32d2e]">
-                <h3 class="text-2xl font-bold uppercase italic text-gray-900 mb-8">Nos Engagements</h3>
-                <div class="space-y-6">
+                <h3 class="text-2xl font-bold uppercase italic text-gray-900 mb-8" data-cms-text="histoire.engagements_title">Nos Engagements</h3>
+                <div class="space-y-6" data-cms-zone="histoire.engagements">
                     <div class="flex items-start gap-4">
                         <div class="w-12 h-12 rounded-full bg-red-100 text-[#b32d2e] flex items-center justify-center text-xl shrink-0">
                             <i class="fas fa-comments"></i>
@@ -423,7 +423,7 @@
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
                 <div>
                     <h2 class="text-3xl md:text-5xl font-bold mb-4 uppercase italic">Nos <span class="text-[#b32d2e]">Réalisations</span></h2>
-                    <p class="text-gray-400">Découvrez quelques-uns de nos derniers chantiers.</p>
+                    <p class="text-gray-400" data-cms-text="gallery.intro">Découvrez quelques-uns de nos derniers chantiers.</p>
                 </div>
                 <div class="mt-4 md:mt-0 italic font-bold text-[#b32d2e]">Le détail fait la différence.</div>
             </div>
@@ -526,35 +526,35 @@
         <div class="max-w-7xl mx-auto px-6" style="padding-top: 2.5rem; padding-bottom: 2.5rem;">
             <div class="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
                 <div class="lg:w-1/2 p-12 bg-[#b32d2e] text-white">
-                    <h2 class="text-4xl font-bold mb-8 uppercase italic">Contactez-nous</h2>
-                    <p class="mb-12 text-red-100">Prêt à transformer votre espace ? Discutons de votre projet dès aujourd'hui.</p>
+                    <h2 class="text-4xl font-bold mb-8 uppercase italic" data-cms-zone="contact.title">Contactez-nous</h2>
+                    <p class="mb-12 text-red-100" data-cms-text="contact.intro">Prêt à transformer votre espace ? Discutons de votre projet dès aujourd'hui.</p>
                     
                     <div class="space-y-6">
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center"><i class="fas fa-phone"></i></div>
                             <div>
-                                <p class="text-sm text-red-200 uppercase tracking-widest">Téléphone</p>
+                                <p class="text-sm text-red-200 uppercase tracking-widest" data-cms-text="contact.phone_label">Téléphone</p>
                                 <p class="text-xl font-bold"><a href="tel:+33788306588" class="hover:underline">07.88.30.65.88</a></p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center"><i class="fas fa-envelope"></i></div>
                             <div>
-                                <p class="text-sm text-red-200 uppercase tracking-widest">Email</p>
+                                <p class="text-sm text-red-200 uppercase tracking-widest" data-cms-text="contact.email_label">Email</p>
                                 <p class="text-xl font-bold"><a href="mailto:floris.casta@gmail.com" class="hover:underline">floris.casta@gmail.com</a></p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center"><i class="fas fa-location-dot"></i></div>
                             <div>
-                                <p class="text-sm text-red-200 uppercase tracking-widest">Adresse</p>
+                                <p class="text-sm text-red-200 uppercase tracking-widest" data-cms-text="contact.address_label">Adresse</p>
                                 <p class="text-xl font-bold">6 Rue du roc, 34700 Lodève</p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center"><i class="fas fa-map-marker-alt"></i></div>
                             <div>
-                                <p class="text-sm text-red-200 uppercase tracking-widest">Zone d'intervention</p>
+                                <p class="text-sm text-red-200 uppercase tracking-widest" data-cms-text="contact.zone_label">Zone d'intervention</p>
                                 <p class="text-xl font-bold">Hérault (34)</p>
                             </div>
                         </div>
@@ -585,7 +585,7 @@
                             <label for="message" class="block text-sm font-bold text-gray-700 mb-2">Message</label>
                             <textarea id="message" name="message" rows="4" required class="w-full px-4 py-3 rounded-lg border focus:border-[#b32d2e] focus:ring-2 focus:ring-red-200 outline-none transition" placeholder="Décrivez votre projet..."></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-gray-900 text-white py-4 rounded-lg font-bold hover:bg-[#b32d2e] transition uppercase tracking-widest">Envoyer la demande</button>
+                        <button type="submit" class="w-full bg-gray-900 text-white py-4 rounded-lg font-bold hover:bg-[#b32d2e] transition uppercase tracking-widest" data-cms-text="contact.btn">Envoyer la demande</button>
                     </form>
                 </div>
             </div>
@@ -905,6 +905,7 @@ if (beforeAfterTrack && beforeAfterPrev && beforeAfterNext && beforeAfterCards.l
     waitAndLoad()
 })()
     </script>
+    <script defer src="cms.js" data-cms-repo="ZiToon34/Castanier_floris"></script>
     <script defer src="cms-bridge.js"></script>
 </body>
 </html>

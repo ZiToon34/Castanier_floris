@@ -27,6 +27,10 @@
     "data-cms-text", "data-cms-html", "data-cms-img", "data-cms-bg",
     "data-cms-href", "data-cms-tel", "data-cms-mail", "data-cms-wa",
     "data-cms-gallery", "data-cms-list",
+    // Zone cliquable dont le contenu est gere par le site lui-meme
+    // (galerie avec visionneuse, carte, grille generee...) :
+    // Mon CMS ne la remplit pas, mais elle reste selectionnable.
+    "data-cms-zone",
   ]
   var SELECTEUR = ATTRIBUTS.map(function (a) { return "[" + a + "]" }).join(",")
 

@@ -21,6 +21,30 @@
           "label": "Badge (ex: Devis gratuit)",
           "type": "text",
           "value": "Devis gratuit sous 24h"
+        },
+        {
+          "id": "title_suffix",
+          "label": "Titre — mot en couleur",
+          "type": "text",
+          "value": "Art de la Couleur"
+        },
+        {
+          "id": "btn1",
+          "label": "Bouton principal",
+          "type": "text",
+          "value": "Voir mes réalisations"
+        },
+        {
+          "id": "btn2",
+          "label": "Bouton téléphone",
+          "type": "text",
+          "value": "07.88.30.65.88"
+        },
+        {
+          "id": "contact_label",
+          "label": "Étiquette contact",
+          "type": "text",
+          "value": "Contact Direct"
         }
       ]
     },
@@ -29,28 +53,133 @@
       "label": "Services",
       "fields": [
         {
-          "id": "service1",
-          "label": "Service 1",
+          "id": "title",
+          "label": "Titre de la section",
           "type": "text",
-          "value": "Peinture intérieure"
+          "value": "Nos Services"
         },
         {
-          "id": "service2",
-          "label": "Service 2",
+          "id": "intro",
+          "label": "Texte d'introduction",
           "type": "text",
-          "value": "Peinture extérieure"
+          "value": "De la préparation des supports aux finitions les plus délicates, nous intervenons sur tous types de chantiers."
         },
         {
-          "id": "service3",
-          "label": "Service 3",
+          "id": "liste",
+          "label": "Prestations",
+          "type": "liste",
+          "value": [
+            {
+              "label": "Peinture Intérieure",
+              "valeur": "Peinture mate, satinée ou veloutée. Pose de revêtements muraux et préparation soignée des surfaces."
+            },
+            {
+              "label": "Décoration & Enduits",
+              "valeur": "Enduits décoratifs, chaux, béton ciré. Apportez une touche unique et moderne à vos murs."
+            },
+            {
+              "label": "Peinture Extérieure",
+              "valeur": "Ravalement de façade, lasure sur bois, peinture ferronnerie. Protection durable contre les intempéries."
+            },
+            {
+              "label": "Pose Plaque de plâtre & bande à joint",
+              "valeur": "Pose de plaque de plâtre et bande à joint pour une finition parfaite."
+            },
+            {
+              "label": "Intervention après sinistre",
+              "valeur": "Intervention après sinistre pour une réparation rapide et efficace."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "histoire",
+      "label": "Notre Histoire",
+      "fields": [
+        {
+          "id": "title",
+          "label": "Titre de la section",
           "type": "text",
-          "value": "Enduits & Ravalement"
+          "value": "Un métier de famille"
         },
         {
-          "id": "service4",
-          "label": "Service 4",
+          "id": "paragraphes",
+          "label": "Paragraphes",
+          "type": "liste",
+          "value": [
+            {
+              "label": "L’entreprise Castanier est avant tout une histoire de famille.",
+              "valeur": ""
+            },
+            {
+              "label": "Tout commence avec Alban Castanier, employé dans une entreprise de peinture, qui transmet son savoir-faire à son fils. Ce dernier exerce à son tour le métier comme salarié avant de fonder sa propre entreprise.",
+              "valeur": ""
+            },
+            {
+              "label": "Fondée en 1950 par Michel Castanier, l’entreprise est née d’un métier exercé avec passion, rigueur et exigence.",
+              "valeur": ""
+            },
+            {
+              "label": "Par la suite, son fils Gilles reprend le flambeau, d’abord en collaboration avec son père, puis seul à la tête de l’entreprise.",
+              "valeur": ""
+            },
+            {
+              "label": "Souhaitant préserver cette transmission de génération en génération, j’ai moi-même suivi une formation spécialisée et obtenu les diplômes nécessaires dans le domaine de la peinture. J’ai ensuite intégré l’entreprise familiale aux côtés de mon père en 2014, avant de créer, en 2025, l’entreprise Castanier Peinture.",
+              "valeur": ""
+            },
+            {
+              "label": "Je suis aujourd’hui fier de ce parcours familial et profondément reconnaissant pour les savoir-faire transmis au fil des générations.",
+              "valeur": ""
+            },
+            {
+              "label": "Chaque projet est préparé avec méthode : écoute, conseils techniques, sélection des bons matériaux et finitions maîtrisées. Notre réputation s'est construite sur la régularité et la confiance.",
+              "valeur": ""
+            }
+          ]
+        },
+        {
+          "id": "stat1",
+          "label": "Chiffre 1",
           "type": "text",
-          "value": "Décoration"
+          "value": "100%"
+        },
+        {
+          "id": "stat1_label",
+          "label": "Chiffre 1 — Libellé",
+          "type": "text",
+          "value": "Chantiers Suivis"
+        },
+        {
+          "id": "stat2_label",
+          "label": "Chiffre 2 — Libellé",
+          "type": "text",
+          "value": "Hérault & alentours"
+        },
+        {
+          "id": "engagements_title",
+          "label": "Titre des engagements",
+          "type": "text",
+          "value": "Nos Engagements"
+        },
+        {
+          "id": "engagements",
+          "label": "Engagements",
+          "type": "liste",
+          "value": [
+            {
+              "label": "Conseil et transparence",
+              "valeur": "Un devis clair, des solutions adaptées et un dialogue constant pendant toute l'intervention."
+            },
+            {
+              "label": "Préparation minutieuse",
+              "valeur": "Protection des espaces, préparation des supports et application maîtrisée pour des finitions durables."
+            },
+            {
+              "label": "Fiabilité dans le temps",
+              "valeur": "Respect des délais annoncés et suivi sérieux pour garantir votre tranquillité."
+            }
+          ]
         }
       ]
     },
@@ -96,6 +225,30 @@
             "IMG_1322.jpg",
             "IMG_1365.jpg"
           ]
+        },
+        {
+          "id": "intro",
+          "label": "Texte d'introduction",
+          "type": "text",
+          "value": "Découvrez quelques-uns de nos derniers chantiers."
+        },
+        {
+          "id": "avant_apres",
+          "label": "Étiquette avant/après",
+          "type": "text",
+          "value": "Avant / Après"
+        },
+        {
+          "id": "resultat",
+          "label": "Titre du comparateur",
+          "type": "text",
+          "value": "Le résultat"
+        },
+        {
+          "id": "astuce",
+          "label": "Astuce sous les photos",
+          "type": "text",
+          "value": "Appuyez sur une photo pour révéler le résultat."
         }
       ]
     },
@@ -120,6 +273,54 @@
           "label": "Adresse",
           "type": "text",
           "value": "6 Rue du roc, 34700 Lodève"
+        },
+        {
+          "id": "title",
+          "label": "Titre de la section",
+          "type": "text",
+          "value": "Contactez-nous"
+        },
+        {
+          "id": "intro",
+          "label": "Texte d'introduction",
+          "type": "text",
+          "value": "Prêt à transformer votre espace ? Discutons de votre projet dès aujourd'hui."
+        },
+        {
+          "id": "phone_label",
+          "label": "Étiquette téléphone",
+          "type": "text",
+          "value": "Téléphone"
+        },
+        {
+          "id": "email_label",
+          "label": "Étiquette email",
+          "type": "text",
+          "value": "Email"
+        },
+        {
+          "id": "address_label",
+          "label": "Étiquette adresse",
+          "type": "text",
+          "value": "Adresse"
+        },
+        {
+          "id": "zone_label",
+          "label": "Étiquette zone",
+          "type": "text",
+          "value": "Zone d'intervention"
+        },
+        {
+          "id": "zone",
+          "label": "Zone d'intervention",
+          "type": "text",
+          "value": "Hérault (34)"
+        },
+        {
+          "id": "btn",
+          "label": "Bouton du formulaire",
+          "type": "text",
+          "value": "Envoyer la demande"
         }
       ]
     },
