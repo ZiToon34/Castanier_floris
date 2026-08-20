@@ -6,8 +6,8 @@
    ne fait strictement rien.
 
    Deux fonctions :
-     1. Le client clique sur une zone du site
-        -> Mon CMS ouvre la rubrique correspondante
+     1. Le client clique sur un element de son site
+        -> Mon CMS ouvre le champ correspondant
      2. Le client ouvre une rubrique dans Mon CMS
         -> le site fait defiler jusqu'a la zone concernee
 
@@ -22,11 +22,17 @@
 
   var CMS_ORIGIN = "https://mon-cms-mnrd.vercel.app"
 
-  /** Identifiants des rubriques, lus depuis content.json */
-  var rubriques = []
+  /** Attributs poses sur les pages : leur valeur vaut "rubrique.champ" */
+  var ATTRIBUTS = [
+    "data-cms-text", "data-cms-html", "data-cms-img", "data-cms-bg",
+    "data-cms-href", "data-cms-tel", "data-cms-mail", "data-cms-wa",
+    "data-cms-gallery", "data-cms-list",
+  ]
+  var SELECTEUR = ATTRIBUTS.map(function (a) { return "[" + a + "]" }).join(",")
 
-  /** Libelles lisibles des rubriques, pour l'etiquette de survol */
-  var libelles = {}
+  var rubriques = []   // identifiants des rubriques
+  var libelles = {}    // "hero" -> "Bannière principale"
+  var champs = {}      // "tarifs.cotisations" -> "Cotisations & licences"
 
   // -------------------------------------------------------
   // ENVOI VERS MON CMS
@@ -41,101 +47,100 @@
   }
 
   // -------------------------------------------------------
-  // TROUVER LA RUBRIQUE D'UN ELEMENT
+  // TROUVER CE QUE VISE LE CLIENT
   // -------------------------------------------------------
 
-  /**
-   * Deduit la rubrique d'un noeud.
-   * Priorite au marqueur explicite data-cms, sinon on cherche
-   * un identifiant prefixe par le nom d'une rubrique
-   * (ex. "hero-titre" appartient a la rubrique "hero").
-   */
-  function rubriqueDuNoeud(noeud) {
-    if (noeud.hasAttribute && noeud.hasAttribute("data-cms")) {
-      return noeud.getAttribute("data-cms")
-    }
-
-    // Le noeud porte lui-meme une liaison : "tarifs.cotisations" -> "tarifs"
-    var propre = liaisonDuNoeud(noeud)
-    if (propre) return propre
-
-    // Sinon, une liaison est peut-etre presente a l'interieur
-    if (noeud.querySelector) {
-      var dedans = noeud.querySelector(SELECTEUR_LIAISONS)
-      if (dedans) {
-        var trouvee = liaisonDuNoeud(dedans)
-        if (trouvee) return trouvee
-      }
-    }
-
-    // Ancienne methode : identifiants prefixes par le nom de la rubrique
-    for (var i = 0; i < rubriques.length; i++) {
-      var id = rubriques[i]
-      if (noeud.id === id) return id
-      if (
-        noeud.querySelector &&
-        noeud.querySelector('[id^="' + id + '-"], [id^="' + id + '_"]')
-      ) {
-        return id
+  /** Renvoie le chemin "rubrique.champ" porte par un element */
+  function cheminDe(el) {
+    if (!el || !el.getAttribute) return null
+    for (var i = 0; i < ATTRIBUTS.length; i++) {
+      var v = el.getAttribute(ATTRIBUTS[i])
+      if (v && v.indexOf(".") > 0 && rubriques.indexOf(v.split(".")[0]) !== -1) {
+        return v
       }
     }
     return null
   }
 
-  /**
-   * Attributs poses sur les pages pour indiquer quel champ afficher.
-   * Leur valeur est de la forme "rubrique.champ" : le prefixe donne
-   * donc directement la rubrique a ouvrir.
-   */
-  var ATTRIBUTS_LIAISON = "data-cms-text,data-cms-html,data-cms-img,data-cms-bg,data-cms-href,data-cms-tel,data-cms-mail,data-cms-wa,data-cms-gallery,data-cms-list".split(",")
-  var SELECTEUR_LIAISONS = "[data-cms-text],[data-cms-html],[data-cms-img],[data-cms-bg],[data-cms-href],[data-cms-tel],[data-cms-mail],[data-cms-wa],[data-cms-gallery],[data-cms-list]"
-
-  /** Renvoie la rubrique portee par un noeud, via ses attributs de liaison */
-  function liaisonDuNoeud(noeud) {
-    if (!noeud || !noeud.getAttribute) return null
-    for (var i = 0; i < ATTRIBUTS_LIAISON.length; i++) {
-      var v = noeud.getAttribute(ATTRIBUTS_LIAISON[i])
-      if (v && v.indexOf(".") > 0) {
-        var rubrique = v.split(".")[0]
-        if (rubriques.indexOf(rubrique) !== -1) return rubrique
-      }
-    }
-    return null
+  /** Distance entre un point et un rectangle (0 si le point est dedans) */
+  function distance(r, x, y) {
+    var dx = Math.max(r.left - x, 0, x - r.right)
+    var dy = Math.max(r.top - y, 0, y - r.bottom)
+    return Math.sqrt(dx * dx + dy * dy)
   }
 
-  /** Remonte depuis l'element clique jusqu'a trouver une rubrique */
-  function rubriqueDe(element) {
-    var noeud = element
+  /**
+   * Element vise par le client.
+   *
+   * On remonte d'abord depuis l'element touche : c'est le cas le plus
+   * frequent et le plus sur. Si le clic tombe dans un espace vide
+   * (marge d'un bloc, interligne d'un tableau), on choisit alors
+   * l'element le PLUS PROCHE du curseur, et le plus petit en cas
+   * d'egalite. Le client obtient ainsi toujours ce qu'il visait,
+   * sans avoir a placer sa souris au pixel pres.
+   */
+  function cibleDe(elementTouche, x, y) {
+    // 1. Chaine des parents
+    var noeud = elementTouche
     while (noeud && noeud !== document.body) {
-      var trouvee = rubriqueDuNoeud(noeud)
-      if (trouvee) return trouvee
+      if (cheminDe(noeud)) return noeud
       noeud = noeud.parentElement
     }
-    return null
+
+    // 2. Le plus proche geometriquement
+    if (typeof x !== "number") return null
+
+    var candidats = document.querySelectorAll(SELECTEUR)
+    var meilleur = null
+    var meilleureDistance = Infinity
+    var meilleureAire = Infinity
+
+    for (var i = 0; i < candidats.length; i++) {
+      var el = candidats[i]
+      if (!cheminDe(el)) continue
+
+      var r = el.getBoundingClientRect()
+      if (r.width === 0 || r.height === 0) continue
+      // hors de l'ecran : le client ne peut pas l'avoir vise
+      if (r.bottom < 0 || r.top > window.innerHeight) continue
+
+      var d = distance(r, x, y)
+      if (d > 120) continue
+
+      var aire = r.width * r.height
+      if (d < meilleureDistance - 1 || (Math.abs(d - meilleureDistance) <= 1 && aire < meilleureAire)) {
+        meilleureDistance = d
+        meilleureAire = aire
+        meilleur = el
+      }
+    }
+    return meilleur
   }
 
-  /** Retrouve la zone visible correspondant a une rubrique */
+  /** Nom lisible d'un element vise */
+  function nomDe(el) {
+    var chemin = cheminDe(el)
+    if (!chemin) return ""
+    return champs[chemin] || libelles[chemin.split(".")[0]] || chemin
+  }
+
+  /** Zone d'une rubrique, pour le defilement demande par l'editeur */
   function zoneDe(id) {
-    var marquee = document.querySelector('[data-cms="' + id + '"]')
-    if (marquee) return marquee
-
-    var repere =
-      document.querySelector('[data-cms-text^="' + id + '."], ' +
-                             '[data-cms-list^="' + id + '."], ' +
-                             '[data-cms-gallery^="' + id + '."], ' +
-                             '[data-cms-img^="' + id + '."]') ||
-      document.getElementById(id) ||
-      document.querySelector('[id^="' + id + '-"], [id^="' + id + '_"]')
-    if (!repere) return null
-
-    return repere.closest("section, header, footer, article") || repere
+    return (
+      document.querySelector('[data-cms="' + id + '"]') ||
+      document.querySelector(
+        '[data-cms-text^="' + id + '."], [data-cms-list^="' + id + '."], ' +
+        '[data-cms-gallery^="' + id + '."], [data-cms-img^="' + id + '."]'
+      ) ||
+      document.getElementById(id)
+    )
   }
 
   // -------------------------------------------------------
-  // SURLIGNAGE AU SURVOL
+  // HABILLAGE VISUEL
   // -------------------------------------------------------
-  // Le cadre eclaire la zone survolee et assombrit tout le reste
-  // grace a une ombre portee demesuree (effet projecteur).
+
+  // Le cadre eclaire l'element vise et assombrit tout le reste
   var cadre = document.createElement("div")
   cadre.style.cssText = [
     "position:fixed",
@@ -145,7 +150,7 @@
     "border-radius:8px",
     "background:rgba(30,95,140,0.06)",
     "box-shadow:0 0 0 9999px rgba(15,23,42,0.42)",
-    "transition:all .14s ease",
+    "transition:all .12s ease",
     "display:none",
   ].join(";")
 
@@ -168,55 +173,42 @@
     document.body.appendChild(cadre)
     document.body.appendChild(etiquette)
   })
+  if (document.body) {
+    document.body.appendChild(cadre)
+    document.body.appendChild(etiquette)
+  }
 
-  var derniereZone = null
+  var derniereCible = null
 
-  function surligner(zone, nom) {
-    if (!zone) return masquer()
-    var r = zone.getBoundingClientRect()
+  function surligner(el, texte) {
+    if (!el) return masquer()
+    var r = el.getBoundingClientRect()
+
     cadre.style.display = "block"
-    cadre.style.top = r.top + "px"
-    cadre.style.left = r.left + "px"
-    cadre.style.width = r.width + "px"
-    cadre.style.height = r.height + "px"
+    cadre.style.top = r.top - 4 + "px"
+    cadre.style.left = r.left - 4 + "px"
+    cadre.style.width = r.width + 8 + "px"
+    cadre.style.height = r.height + 8 + "px"
 
-    etiquette.textContent = nom
+    etiquette.textContent = texte
     etiquette.style.display = "block"
-    // L'etiquette se place au-dessus, ou dedans si la zone touche le haut
-    etiquette.style.top = (r.top > 44 ? r.top - 40 : r.top + 10) + "px"
-    etiquette.style.left = Math.max(8, r.left + 8) + "px"
+    etiquette.style.top = (r.top > 44 ? r.top - 40 : r.bottom + 10) + "px"
+    etiquette.style.left = Math.max(8, r.left) + "px"
 
-    // La zone devient cliquable a l'oeil : curseur en forme de main
-    zone.style.cursor = "pointer"
+    el.style.cursor = "pointer"
   }
 
   function masquer() {
     cadre.style.display = "none"
     etiquette.style.display = "none"
-    if (derniereZone) derniereZone.style.cursor = ""
+    if (derniereCible) derniereCible.style.cursor = ""
+    derniereCible = null
   }
 
-  document.addEventListener("mouseover", function (e) {
-    var id = rubriqueDe(e.target)
-    if (!id) {
-      derniereZone = null
-      return masquer()
-    }
-    var zone = zoneDe(id)
-    if (zone === derniereZone) return
-    derniereZone = zone
-    surligner(zone, "\u270F\uFE0F  Cliquez pour modifier \u00B7 " + (libelles[id] || id))
-  })
-
-  document.addEventListener("mouseleave", masquer)
-  window.addEventListener("scroll", function () {
-    if (derniereZone) surligner(derniereZone, etiquette.textContent)
-  })
-
-  /** Eclair vert de confirmation : la zone choisie clignote une fois */
-  function confirmer(zone, nom) {
-    if (!zone) return
-    surligner(zone, "\u2714\uFE0F  " + nom)
+  /** Eclair vert : le choix du client est pris en compte */
+  function confirmer(el, nom) {
+    if (!el) return
+    surligner(el, "\u2714\uFE0F  " + nom)
     cadre.style.borderColor = "#15803D"
     cadre.style.background = "rgba(21,128,61,0.12)"
     setTimeout(function () {
@@ -227,43 +219,66 @@
   }
 
   // -------------------------------------------------------
-  // CLIC : ouvrir la rubrique dans Mon CMS
+  // SURVOL (ordinateur)
   // -------------------------------------------------------
-  document.addEventListener(
-    "click",
-    function (e) {
-      // Un lien reste un lien : on laisse le client naviguer dans son site
-      if (e.target.closest && e.target.closest("a[href]")) return
+  document.addEventListener("mousemove", function (e) {
+    if (!rubriques.length) return
+    var el = cibleDe(e.target, e.clientX, e.clientY)
+    if (el === derniereCible) return
+    if (derniereCible) derniereCible.style.cursor = ""
+    derniereCible = el
+    if (!el) return masquer()
+    surligner(el, "\u270F\uFE0F  Cliquez pour modifier \u00B7 " + nomDe(el))
+  })
 
-      var id = rubriqueDe(e.target)
-      if (!id) return
-
-      confirmer(zoneDe(id), libelles[id] || id)
-      envoyer({ type: "select", section: id })
-    },
-    true
-  )
+  document.addEventListener("mouseleave", masquer)
+  window.addEventListener("scroll", function () {
+    if (derniereCible) surligner(derniereCible, etiquette.textContent)
+  })
 
   // -------------------------------------------------------
-  // ECRANS TACTILES
-  // Il n'y a pas de survol sur telephone : on montre la zone
-  // des que le doigt se pose, avant meme le relachement.
+  // APPUI (telephone) : pas de survol, on montre des le contact
   // -------------------------------------------------------
   document.addEventListener(
     "touchstart",
     function (e) {
-      var cible = e.touches && e.touches[0] ? e.touches[0].target : e.target
-      if (!cible || !cible.closest) return
-      if (cible.closest("a[href]")) return
+      if (!rubriques.length) return
+      var t = e.touches && e.touches[0]
+      if (!t) return
+      if (t.target.closest && t.target.closest("a[href]")) return
 
-      var id = rubriqueDe(cible)
-      if (!id) return
-
-      var zone = zoneDe(id)
-      derniereZone = zone
-      surligner(zone, "\u270F\uFE0F  Modifier \u00B7 " + (libelles[id] || id))
+      var el = cibleDe(t.target, t.clientX, t.clientY)
+      if (!el) return
+      derniereCible = el
+      surligner(el, "\u270F\uFE0F  Modifier \u00B7 " + nomDe(el))
     },
     { passive: true, capture: true }
+  )
+
+  // -------------------------------------------------------
+  // CLIC : ouvrir le champ dans Mon CMS
+  // -------------------------------------------------------
+  document.addEventListener(
+    "click",
+    function (e) {
+      if (!rubriques.length) return
+      // Un lien reste un lien : le client navigue dans son site
+      if (e.target.closest && e.target.closest("a[href]")) return
+
+      var el = cibleDe(e.target, e.clientX, e.clientY)
+      if (!el) return
+
+      var chemin = cheminDe(el)
+      if (!chemin) return
+
+      confirmer(el, nomDe(el))
+      envoyer({
+        type: "select",
+        section: chemin.split(".")[0],
+        field: chemin.split(".")[1],
+      })
+    },
+    true
   )
 
   // -------------------------------------------------------
@@ -275,29 +290,39 @@
     if (!d || d.source !== "mon-cms") return
 
     if (d.type === "scrollTo") {
-      var zone = zoneDe(d.section)
-      if (!zone) return
-      zone.scrollIntoView({ behavior: "smooth", block: "center" })
-      surligner(zone, "\u270F\uFE0F  Cliquez pour modifier \u00B7 " + (libelles[d.section] || d.section))
-      setTimeout(masquer, 2200)
+      // On vise le champ precis s'il est fourni, la rubrique sinon
+      var el =
+        (d.field &&
+          document.querySelector(
+            ATTRIBUTS.map(function (a) {
+              return "[" + a + '="' + d.section + "." + d.field + '"]'
+            }).join(",")
+          )) ||
+        zoneDe(d.section)
+      if (!el) return
+
+      el.scrollIntoView({ behavior: "smooth", block: "center" })
+      surligner(el, "\u270F\uFE0F  " + nomDe(el))
+      setTimeout(masquer, 1600)
     }
   })
 
   // -------------------------------------------------------
-  // DEMARRAGE : on lit content.json pour connaitre les rubriques
+  // CHARGEMENT DES NOMS DE RUBRIQUES ET DE CHAMPS
   // -------------------------------------------------------
   fetch("content.json?t=" + Date.now())
-    .then(function (r) {
-      return r.json()
-    })
+    .then(function (r) { return r.json() })
     .then(function (data) {
       rubriques = data.sections.map(function (s) {
         libelles[s.id] = s.label
+        s.fields.forEach(function (f) {
+          champs[s.id + "." + f.id] = f.label
+        })
         return s.id
       })
       envoyer({ type: "ready", page: location.pathname })
     })
     .catch(function () {
-      /* content.json introuvable : le pont reste inactif */
+      /* contenu injoignable : le pont reste inactif */
     })
 })()
