@@ -5,11 +5,16 @@
    d'apercu de Mon CMS. Pour un visiteur normal, ce fichier
    ne fait strictement rien.
 
-   Deux fonctions :
-     1. Le client clique sur un element de son site
-        -> Mon CMS ouvre le champ correspondant
-     2. Le client ouvre une rubrique dans Mon CMS
-        -> le site fait defiler jusqu'a la zone concernee
+   Deux modes, pilotes depuis la barre de l'apercu :
+
+     NAVIGATION (par defaut)
+       Le client regarde son site normalement. Il scrolle,
+       il clique sur ses liens. Rien ne s'allume.
+
+     SELECTION
+       Le survol eclaire les elements modifiables, le clic
+       en choisit un. Les liens sont neutralises pour que
+       le client ne quitte pas la page par megarde.
 
    A inclure en dernier, juste avant </body> :
        <script defer src="cms-bridge.js"></script>
@@ -28,15 +33,18 @@
     "data-cms-href", "data-cms-tel", "data-cms-mail", "data-cms-wa",
     "data-cms-gallery", "data-cms-list",
     // Zone cliquable dont le contenu est gere par le site lui-meme
-    // (galerie avec visionneuse, carte, grille generee...) :
-    // Mon CMS ne la remplit pas, mais elle reste selectionnable.
+    // (galerie avec visionneuse, carte, grille generee...)
     "data-cms-zone",
   ]
   var SELECTEUR = ATTRIBUTS.map(function (a) { return "[" + a + "]" }).join(",")
 
-  var rubriques = []   // identifiants des rubriques
-  var libelles = {}    // "hero" -> "Bannière principale"
-  var champs = {}      // "tarifs.cotisations" -> "Cotisations & licences"
+  var rubriques = []      // identifiants des rubriques
+  var libelles = {}       // "hero" -> "Bannière principale"
+  var champs = {}         // "tarifs.cotisations" -> "Cotisations & licences"
+
+  var modeSelection = false
+  var survole = null      // element sous le curseur
+  var choisi = null       // element retenu par le client
 
   // -------------------------------------------------------
   // ENVOI VERS MON CMS
@@ -76,22 +84,18 @@
   /**
    * Element vise par le client.
    *
-   * On remonte d'abord depuis l'element touche : c'est le cas le plus
-   * frequent et le plus sur. Si le clic tombe dans un espace vide
-   * (marge d'un bloc, interligne d'un tableau), on choisit alors
-   * l'element le PLUS PROCHE du curseur, et le plus petit en cas
-   * d'egalite. Le client obtient ainsi toujours ce qu'il visait,
-   * sans avoir a placer sa souris au pixel pres.
+   * On remonte d'abord depuis l'element touche. Si le clic tombe dans
+   * un espace vide (marge d'un bloc, interligne d'un tableau), on prend
+   * l'element le plus proche du curseur, et le plus petit a egalite.
+   * Viser a peu pres suffit donc.
    */
   function cibleDe(elementTouche, x, y) {
-    // 1. Chaine des parents
     var noeud = elementTouche
     while (noeud && noeud !== document.body) {
       if (cheminDe(noeud)) return noeud
       noeud = noeud.parentElement
     }
 
-    // 2. Le plus proche geometriquement
     if (typeof x !== "number") return null
 
     var candidats = document.querySelectorAll(SELECTEUR)
@@ -105,14 +109,14 @@
 
       var r = el.getBoundingClientRect()
       if (r.width === 0 || r.height === 0) continue
-      // hors de l'ecran : le client ne peut pas l'avoir vise
       if (r.bottom < 0 || r.top > window.innerHeight) continue
 
       var d = distance(r, x, y)
       if (d > 120) continue
 
       var aire = r.width * r.height
-      if (d < meilleureDistance - 1 || (Math.abs(d - meilleureDistance) <= 1 && aire < meilleureAire)) {
+      if (d < meilleureDistance - 1 ||
+          (Math.abs(d - meilleureDistance) <= 1 && aire < meilleureAire)) {
         meilleureDistance = d
         meilleureAire = aire
         meilleur = el
@@ -121,7 +125,7 @@
     return meilleur
   }
 
-  /** Nom lisible d'un element vise */
+  /** Nom lisible d'un element */
   function nomDe(el) {
     var chemin = cheminDe(el)
     if (!chemin) return ""
@@ -134,7 +138,8 @@
       document.querySelector('[data-cms="' + id + '"]') ||
       document.querySelector(
         '[data-cms-text^="' + id + '."], [data-cms-list^="' + id + '."], ' +
-        '[data-cms-gallery^="' + id + '."], [data-cms-img^="' + id + '."]'
+        '[data-cms-gallery^="' + id + '."], [data-cms-img^="' + id + '."], ' +
+        '[data-cms-zone^="' + id + '."]'
       ) ||
       document.getElementById(id)
     )
@@ -144,19 +149,27 @@
   // HABILLAGE VISUEL
   // -------------------------------------------------------
 
-  // Le cadre eclaire l'element vise et assombrit tout le reste
-  var cadre = document.createElement("div")
-  cadre.style.cssText = [
-    "position:fixed",
-    "z-index:2147483646",
-    "pointer-events:none",
-    "border:3px solid #1E5F8C",
-    "border-radius:8px",
-    "background:rgba(30,95,140,0.06)",
-    "box-shadow:0 0 0 9999px rgba(15,23,42,0.42)",
-    "transition:all .12s ease",
-    "display:none",
-  ].join(";")
+  function creerCadre(couleur, fond, ombre) {
+    var d = document.createElement("div")
+    d.style.cssText = [
+      "position:fixed",
+      "z-index:2147483645",
+      "pointer-events:none",
+      "border:3px solid " + couleur,
+      "border-radius:8px",
+      "background:" + fond,
+      ombre ? "box-shadow:0 0 0 9999px rgba(15,23,42,0.42)" : "",
+      "transition:all .12s ease",
+      "display:none",
+    ].join(";")
+    return d
+  }
+
+  // Cadre du survol : eclaire l'element et assombrit le reste
+  var cadre = creerCadre("#1E5F8C", "rgba(30,95,140,0.06)", true)
+  // Cadre du choix : reste en place, sans assombrir
+  var cadreChoix = creerCadre("#15803D", "rgba(21,128,61,0.10)", false)
+  cadreChoix.style.zIndex = "2147483644"
 
   var etiquette = document.createElement("div")
   etiquette.style.cssText = [
@@ -173,101 +186,111 @@
     "display:none",
   ].join(";")
 
-  document.addEventListener("DOMContentLoaded", function () {
+  function poser() {
+    if (!document.body) return
     document.body.appendChild(cadre)
-    document.body.appendChild(etiquette)
-  })
-  if (document.body) {
-    document.body.appendChild(cadre)
+    document.body.appendChild(cadreChoix)
     document.body.appendChild(etiquette)
   }
+  if (document.body) poser()
+  else document.addEventListener("DOMContentLoaded", poser)
 
-  var derniereCible = null
+  function placer(boite, el) {
+    var r = el.getBoundingClientRect()
+    boite.style.display = "block"
+    boite.style.top = r.top - 4 + "px"
+    boite.style.left = r.left - 4 + "px"
+    boite.style.width = r.width + 8 + "px"
+    boite.style.height = r.height + 8 + "px"
+    return r
+  }
 
   function surligner(el, texte) {
-    if (!el) return masquer()
-    var r = el.getBoundingClientRect()
-
-    cadre.style.display = "block"
-    cadre.style.top = r.top - 4 + "px"
-    cadre.style.left = r.left - 4 + "px"
-    cadre.style.width = r.width + 8 + "px"
-    cadre.style.height = r.height + 8 + "px"
+    if (!el) return masquerSurvol()
+    var r = placer(cadre, el)
 
     etiquette.textContent = texte
     etiquette.style.display = "block"
     etiquette.style.top = (r.top > 44 ? r.top - 40 : r.bottom + 10) + "px"
     etiquette.style.left = Math.max(8, r.left) + "px"
-
-    el.style.cursor = "pointer"
   }
 
-  function masquer() {
+  function masquerSurvol() {
     cadre.style.display = "none"
     etiquette.style.display = "none"
-    if (derniereCible) derniereCible.style.cursor = ""
-    derniereCible = null
+    survole = null
   }
 
-  /** Eclair vert : le choix du client est pris en compte */
-  function confirmer(el, nom) {
-    if (!el) return
-    surligner(el, "\u2714\uFE0F  " + nom)
-    cadre.style.borderColor = "#15803D"
-    cadre.style.background = "rgba(21,128,61,0.12)"
-    setTimeout(function () {
-      cadre.style.borderColor = "#1E5F8C"
-      cadre.style.background = "rgba(30,95,140,0.06)"
-      masquer()
-    }, 550)
+  function montrerChoix() {
+    if (choisi) placer(cadreChoix, choisi)
+    else cadreChoix.style.display = "none"
+  }
+
+  // -------------------------------------------------------
+  // CHANGEMENT DE MODE
+  // -------------------------------------------------------
+  function appliquerMode(actif) {
+    modeSelection = actif
+    document.documentElement.style.cursor = actif ? "crosshair" : ""
+    if (!actif) {
+      masquerSurvol()
+      choisi = null
+      cadreChoix.style.display = "none"
+    }
   }
 
   // -------------------------------------------------------
   // SURVOL (ordinateur)
   // -------------------------------------------------------
   document.addEventListener("mousemove", function (e) {
-    if (!rubriques.length) return
+    if (!modeSelection || !rubriques.length) return
     var el = cibleDe(e.target, e.clientX, e.clientY)
-    if (el === derniereCible) return
-    if (derniereCible) derniereCible.style.cursor = ""
-    derniereCible = el
-    if (!el) return masquer()
-    surligner(el, "\u270F\uFE0F  Cliquez pour modifier \u00B7 " + nomDe(el))
+    if (el === survole) return
+    survole = el
+    if (!el) return masquerSurvol()
+    surligner(el, "\u270F\uFE0F  " + nomDe(el))
   })
 
-  document.addEventListener("mouseleave", masquer)
-  window.addEventListener("scroll", function () {
-    if (derniereCible) surligner(derniereCible, etiquette.textContent)
+  document.addEventListener("mouseleave", function () {
+    if (modeSelection) masquerSurvol()
   })
+
+  window.addEventListener("scroll", function () {
+    if (!modeSelection) return
+    if (survole) surligner(survole, etiquette.textContent)
+    montrerChoix()
+  })
+
+  window.addEventListener("resize", montrerChoix)
 
   // -------------------------------------------------------
-  // APPUI (telephone) : pas de survol, on montre des le contact
+  // APPUI (telephone) : pas de survol, on montre au contact
   // -------------------------------------------------------
   document.addEventListener(
     "touchstart",
     function (e) {
-      if (!rubriques.length) return
+      if (!modeSelection || !rubriques.length) return
       var t = e.touches && e.touches[0]
       if (!t) return
-      if (t.target.closest && t.target.closest("a[href]")) return
-
       var el = cibleDe(t.target, t.clientX, t.clientY)
       if (!el) return
-      derniereCible = el
-      surligner(el, "\u270F\uFE0F  Modifier \u00B7 " + nomDe(el))
+      survole = el
+      surligner(el, "\u270F\uFE0F  " + nomDe(el))
     },
     { passive: true, capture: true }
   )
 
   // -------------------------------------------------------
-  // CLIC : ouvrir le champ dans Mon CMS
+  // CLIC : retenir l'element, sans quitter la page
   // -------------------------------------------------------
   document.addEventListener(
     "click",
     function (e) {
-      if (!rubriques.length) return
-      // Un lien reste un lien : le client navigue dans son site
-      if (e.target.closest && e.target.closest("a[href]")) return
+      if (!modeSelection || !rubriques.length) return
+
+      // En mode selection, aucun lien ne doit emmener le client ailleurs
+      e.preventDefault()
+      e.stopPropagation()
 
       var el = cibleDe(e.target, e.clientX, e.clientY)
       if (!el) return
@@ -275,26 +298,34 @@
       var chemin = cheminDe(el)
       if (!chemin) return
 
-      confirmer(el, nomDe(el))
+      choisi = el
+      montrerChoix()
+      masquerSurvol()
+
       envoyer({
         type: "select",
         section: chemin.split(".")[0],
         field: chemin.split(".")[1],
+        label: nomDe(el),
       })
     },
     true
   )
 
   // -------------------------------------------------------
-  // RECEPTION : Mon CMS demande de defiler vers une rubrique
+  // MESSAGES VENUS DE MON CMS
   // -------------------------------------------------------
   window.addEventListener("message", function (e) {
     if (e.origin !== CMS_ORIGIN) return
     var d = e.data
     if (!d || d.source !== "mon-cms") return
 
+    if (d.type === "mode") {
+      appliquerMode(!!d.actif)
+      return
+    }
+
     if (d.type === "scrollTo") {
-      // On vise le champ precis s'il est fourni, la rubrique sinon
       var el =
         (d.field &&
           document.querySelector(
@@ -306,8 +337,14 @@
       if (!el) return
 
       el.scrollIntoView({ behavior: "smooth", block: "center" })
-      surligner(el, "\u270F\uFE0F  " + nomDe(el))
-      setTimeout(masquer, 1600)
+      choisi = el
+      montrerChoix()
+      setTimeout(function () {
+        if (!modeSelection) {
+          choisi = null
+          cadreChoix.style.display = "none"
+        }
+      }, 2200)
     }
   })
 
