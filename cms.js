@@ -18,6 +18,7 @@
 
    Pour les listes, data-cms-list-style precise la mise en forme :
      tarif      ligne intitule / prix (page Infos)
+     tarif-ligne ligne de tableau <tr><td>…</td><td>…</td></tr>
      offre      element de liste avec prix a droite
      etiquette  petite pastille
      paragraphe une ligne de texte par element
@@ -159,6 +160,10 @@ function appliquerListes() {
         if (style === "tarif") {
           return `<div class="tarif-item"><span>${intitule}</span><span>${val}</span></div>`
         }
+        if (style === "tarif-ligne") {
+          // Ligne de tableau : intitule a gauche, montant a droite
+          return `<tr><td>${intitule}</td><td>${val}</td></tr>`
+        }
         if (style === "check") {
           // <li><strong>Titre</strong> — description</li>
           return `<li><strong>${intitule}</strong>${val ? ` \u2014 ${val}` : ""}</li>`
@@ -187,6 +192,133 @@ function appliquerListes() {
   })
 }
 
+// ---------------------------------------------------------
+// REPETEURS
+// ---------------------------------------------------------
+
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin",
+                 "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+
+/** "2026-07-14" devient "14 juillet 2026". Chaine vide si la date est invalide. */
+function dateFr(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "")
+  return m ? `${Number(m[3])} ${MOIS_FR[Number(m[2]) - 1]} ${m[1]}` : ""
+}
+
+/** Date du jour en AAAA-MM-JJ : les chaines ISO se comparent directement. */
+function aujourdhuiIso() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+}
+
+/**
+ * Remplit un exemplaire clone du gabarit avec les valeurs d'une entree.
+ * Un element sans valeur correspondante est laisse tel quel, sauf s'il
+ * porte data-cms-item-si : il est alors retire, ce qui evite les puces
+ * et les badges vides.
+ */
+function remplirModele(racine, entree) {
+  racine.querySelectorAll("[data-cms-item-si]").forEach((el) => {
+    if (!entree[el.dataset.cmsItemSi]) el.remove()
+  })
+
+  racine.querySelectorAll("[data-cms-item]").forEach((el) => {
+    const v = entree[el.dataset.cmsItem]
+    if (v === undefined || v === "") return
+    el.textContent = el.dataset.cmsItemFormat === "date" ? dateFr(v) : v
+    // Un <time> merite sa date lisible par les machines
+    if (el.tagName === "TIME" && /^\d{4}-\d{2}-\d{2}$/.test(v)) el.setAttribute("datetime", v)
+  })
+
+  racine.querySelectorAll("[data-cms-item-html]").forEach((el) => {
+    const v = entree[el.dataset.cmsItemHtml]
+    if (v) el.innerHTML = v
+  })
+
+  racine.querySelectorAll("[data-cms-item-img]").forEach((el) => {
+    const v = entree[el.dataset.cmsItemImg]
+    if (v) el.src = img(v)
+    else el.remove()          // pas de photo : pas d'image cassee
+  })
+
+  racine.querySelectorAll("[data-cms-item-href]").forEach((el) => {
+    const v = entree[el.dataset.cmsItemHref]
+    if (v) el.href = v
+    else el.remove()
+  })
+}
+
+function appliquerRepeteurs() {
+  document.querySelectorAll("[data-cms-repeat]").forEach((conteneur) => {
+    const entrees = valeur(conteneur.dataset.cmsRepeat)
+    if (!Array.isArray(entrees)) return
+
+    const modele = conteneur.querySelector("[data-cms-repeat-modele]")
+    if (!modele) return
+
+    const o = conteneur.dataset
+    const champDate = o.cmsRepeatDate || ""
+    const champActif = o.cmsRepeatActif || ""
+    const quand = o.cmsRepeatQuand || "tous"      // futur | passe | tous
+    const tri = o.cmsRepeatTri || "recent"        // recent | ancien
+    const annees = parseInt(o.cmsRepeatAnnees || "2", 10)
+    const limite = parseInt(o.cmsRepeatLimite || "0", 10)
+    const jour = aujourdhuiIso()
+    const anneeMin = new Date().getFullYear() - (annees - 1)
+
+    let liste = entrees.slice()
+
+    // Une entree masquee dans le back-office ne sort pas sur le site
+    if (champActif) liste = liste.filter((e) => e[champActif] !== false)
+
+    if (champDate) {
+      // Seules l'annee en cours et les precedentes retenues restent visibles.
+      // Les autres demeurent dans content.json : rien n'est efface.
+      liste = liste.filter((e) => {
+        const d = e[champDate]
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(d || "")) return false
+        if (Number(d.slice(0, 4)) < anneeMin) return false
+        if (quand === "futur") return d >= jour
+        if (quand === "passe") return d < jour
+        return true
+      })
+
+      liste.sort((a, b) =>
+        tri === "ancien"
+          ? a[champDate].localeCompare(b[champDate])
+          : b[champDate].localeCompare(a[champDate])
+      )
+    }
+
+    if (limite > 0) liste = liste.slice(0, limite)
+
+    // Le gabarit est retire du DOM une fois les clones prets
+    const fragment = document.createDocumentFragment()
+    liste.forEach((entree) => {
+      const clone = modele.content
+        ? modele.content.cloneNode(true)
+        : modele.cloneNode(true)
+      remplirModele(clone, entree)
+      fragment.appendChild(clone)
+    })
+
+    conteneur.innerHTML = ""
+    if (liste.length === 0 && o.cmsRepeatVide) {
+      const vide = document.createElement("p")
+      vide.className = "repeat-vide"
+      vide.textContent = o.cmsRepeatVide
+      conteneur.appendChild(vide)
+    } else {
+      conteneur.appendChild(fragment)
+    }
+
+    // Permet a la page de reagir, par exemple pour compter les resultats
+    conteneur.dispatchEvent(
+      new CustomEvent("cms:repeat", { bubbles: true, detail: { nombre: liste.length } })
+    )
+  })
+}
+
 /** Applique tout le contenu a la page */
 function appliquerContenu() {
   appliquerTextes()
@@ -194,6 +326,7 @@ function appliquerContenu() {
   appliquerLiens()
   appliquerGaleries()
   appliquerListes()
+  appliquerRepeteurs()
 }
 
 // ---------------------------------------------------------
