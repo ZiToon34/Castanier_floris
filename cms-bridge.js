@@ -8,13 +8,13 @@
    Deux modes, pilotes depuis la barre de l'apercu :
 
      NAVIGATION (par defaut)
-       Le client regarde son site normalement. Il scrolle,
-       il clique sur ses liens. Rien ne s'allume.
+       Le client regarde son site normalement. Il fait defiler,
+       il suit ses liens. Rien ne s'allume.
 
-     SELECTION
-       Le survol eclaire les elements modifiables, le clic
-       en choisit un. Les liens sont neutralises pour que
-       le client ne quitte pas la page par megarde.
+     MODIFICATION
+       Le survol eclaire les elements modifiables, le clic ou
+       l'appui en choisit un. Les liens sont neutralises pour
+       que le client ne quitte pas la page par megarde.
 
    A inclure en dernier, juste avant </body> :
        <script defer src="cms-bridge.js"></script>
@@ -25,50 +25,50 @@
   // Page affichee normalement (pas dans un cadre) : on ne fait rien
   if (window.self === window.top) return
 
-  var CMS_ORIGIN = "https://mon-cms-mnrd.vercel.app"
-
-  /** Attributs poses sur les pages : leur valeur vaut "rubrique.champ" */
+  /* -------------------------------------------------------
+     Attributs poses sur les pages. Leur valeur vaut
+     "rubrique.champ" : le prefixe donne la rubrique a ouvrir.
+     data-cms-zone designe une zone cliquable dont le contenu
+     est gere par le site lui-meme (galerie avec visionneuse,
+     carte, grille generee...).
+     ------------------------------------------------------- */
   var ATTRIBUTS = [
     "data-cms-text", "data-cms-html", "data-cms-img", "data-cms-bg",
     "data-cms-href", "data-cms-tel", "data-cms-mail", "data-cms-wa",
-    "data-cms-gallery", "data-cms-list",
-    // Zone cliquable dont le contenu est gere par le site lui-meme
-    // (galerie avec visionneuse, carte, grille generee...)
-    "data-cms-zone",
+    "data-cms-gallery", "data-cms-list", "data-cms-src", "data-cms-zone",
   ]
   var SELECTEUR = ATTRIBUTS.map(function (a) { return "[" + a + "]" }).join(",")
 
-  var rubriques = []      // identifiants des rubriques
-  var libelles = {}       // "hero" -> "Bannière principale"
-  var champs = {}         // "tarifs.cotisations" -> "Cotisations & licences"
+  var rubriques = []   // identifiants des rubriques
+  var libelles = {}    // "hero" -> "Bannière principale"
+  var champs = {}      // "tarifs.cotisations" -> "Cotisations & licences"
 
   var modeSelection = false
-  var survole = null      // element sous le curseur
-  var choisi = null       // element retenu par le client
+  var survole = null   // element sous le curseur ou le doigt
+  var choisi = null    // element retenu par le client
 
-  // -------------------------------------------------------
+  // =======================================================
   // ENVOI VERS MON CMS
-  // -------------------------------------------------------
-  /**
-   * Envoie un message a Mon CMS.
-   *
-   * La cible est volontairement ouverte : le contenu se limite a un nom
-   * de rubrique, et Mon CMS verifie de son cote que le message provient
-   * bien de son propre cadre. Exiger une adresse exacte rendait l'echange
-   * muet des que l'editeur etait ouvert depuis une autre adresse.
+  // =======================================================
+
+  /*
+   * La cible est volontairement ouverte : le contenu se limite a un
+   * nom de rubrique, et Mon CMS verifie de son cote que le message
+   * vient bien de son propre cadre. Exiger une adresse exacte rendait
+   * l'echange muet des que l'editeur changeait d'adresse.
    */
   function envoyer(message) {
     message.source = "mon-cms-site"
     try {
       window.parent.postMessage(message, "*")
     } catch (e) {
-      /* le cadre parent n'est pas Mon CMS : on ignore */
+      /* le cadre parent n'est pas Mon CMS */
     }
   }
 
-  // -------------------------------------------------------
+  // =======================================================
   // TROUVER CE QUE VISE LE CLIENT
-  // -------------------------------------------------------
+  // =======================================================
 
   /** Renvoie le chemin "rubrique.champ" porte par un element */
   function cheminDe(el) {
@@ -92,13 +92,13 @@
   /**
    * Element vise par le client.
    *
-   * On remonte d'abord depuis l'element touche. Si le clic tombe dans
-   * un espace vide (marge d'un bloc, interligne d'un tableau), on prend
-   * l'element le plus proche du curseur, et le plus petit a egalite.
-   * Viser a peu pres suffit donc.
+   * On remonte d'abord depuis l'element touche. Si le geste tombe dans
+   * un espace vide — marge d'un bloc, interligne d'un tableau — on prend
+   * l'element le plus proche, et le plus petit a egalite. Viser a peu
+   * pres suffit donc.
    */
-  function cibleDe(elementTouche, x, y) {
-    var noeud = elementTouche
+  function cibleDe(depart, x, y) {
+    var noeud = depart
     while (noeud && noeud !== document.body) {
       if (cheminDe(noeud)) return noeud
       noeud = noeud.parentElement
@@ -108,8 +108,8 @@
 
     var candidats = document.querySelectorAll(SELECTEUR)
     var meilleur = null
-    var meilleureDistance = Infinity
-    var meilleureAire = Infinity
+    var plusProche = Infinity
+    var plusPetit = Infinity
 
     for (var i = 0; i < candidats.length; i++) {
       var el = candidats[i]
@@ -123,10 +123,9 @@
       if (d > 120) continue
 
       var aire = r.width * r.height
-      if (d < meilleureDistance - 1 ||
-          (Math.abs(d - meilleureDistance) <= 1 && aire < meilleureAire)) {
-        meilleureDistance = d
-        meilleureAire = aire
+      if (d < plusProche - 1 || (Math.abs(d - plusProche) <= 1 && aire < plusPetit)) {
+        plusProche = d
+        plusPetit = aire
         meilleur = el
       }
     }
@@ -145,19 +144,19 @@
     return (
       document.querySelector('[data-cms="' + id + '"]') ||
       document.querySelector(
-        '[data-cms-text^="' + id + '."], [data-cms-list^="' + id + '."], ' +
-        '[data-cms-gallery^="' + id + '."], [data-cms-img^="' + id + '."], ' +
-        '[data-cms-zone^="' + id + '."]'
+        ATTRIBUTS.map(function (a) {
+          return "[" + a + '^="' + id + '."]'
+        }).join(",")
       ) ||
       document.getElementById(id)
     )
   }
 
-  // -------------------------------------------------------
+  // =======================================================
   // HABILLAGE VISUEL
-  // -------------------------------------------------------
+  // =======================================================
 
-  function creerCadre(couleur, fond, ombre) {
+  function creerCadre(couleur, fond, projecteur) {
     var d = document.createElement("div")
     d.style.cssText = [
       "position:fixed",
@@ -166,7 +165,7 @@
       "border:3px solid " + couleur,
       "border-radius:8px",
       "background:" + fond,
-      ombre ? "box-shadow:0 0 0 9999px rgba(15,23,42,0.42)" : "",
+      projecteur ? "box-shadow:0 0 0 9999px rgba(15,23,42,0.42)" : "",
       "transition:all .12s ease",
       "display:none",
     ].join(";")
@@ -181,28 +180,45 @@
 
   var etiquette = document.createElement("div")
   etiquette.style.cssText = [
-    "position:fixed",
-    "z-index:2147483647",
-    "pointer-events:none",
-    "background:#1E5F8C",
-    "color:#fff",
+    "position:fixed", "z-index:2147483647", "pointer-events:none",
+    "background:#1E5F8C", "color:#fff",
     "font:600 13px/1.25 system-ui,-apple-system,sans-serif",
-    "padding:8px 14px",
-    "border-radius:8px",
-    "white-space:nowrap",
+    "padding:8px 14px", "border-radius:8px", "white-space:nowrap",
     "box-shadow:0 4px 14px rgba(15,23,42,.45)",
     "display:none",
   ].join(";")
 
+  // Bandeau d'etat, en haut de la page
+  var bandeau = document.createElement("div")
+  bandeau.style.cssText = [
+    "position:fixed", "top:0", "left:0", "right:0",
+    "z-index:2147483647", "pointer-events:none",
+    "background:#1E5F8C", "color:#fff",
+    "font:600 12px/1.3 system-ui,-apple-system,sans-serif",
+    "padding:8px 12px", "text-align:center",
+    "display:none",
+  ].join(";")
+
   function poser() {
-    if (!document.body) return
+    if (!document.body) return false
     document.body.appendChild(cadre)
     document.body.appendChild(cadreChoix)
     document.body.appendChild(etiquette)
-    document.body.appendChild(temoin)
+    document.body.appendChild(bandeau)
+    return true
   }
-  if (document.body) poser()
-  else document.addEventListener("DOMContentLoaded", poser)
+  if (!poser()) document.addEventListener("DOMContentLoaded", poser)
+
+  function afficherBandeau(texte, couleur, duree) {
+    bandeau.textContent = texte
+    bandeau.style.background = couleur
+    bandeau.style.display = "block"
+    if (duree) {
+      setTimeout(function () {
+        if (!modeSelection) bandeau.style.display = "none"
+      }, duree)
+    }
+  }
 
   function placer(boite, el) {
     var r = el.getBoundingClientRect()
@@ -217,7 +233,6 @@
   function surligner(el, texte) {
     if (!el) return masquerSurvol()
     var r = placer(cadre, el)
-
     etiquette.textContent = texte
     etiquette.style.display = "block"
     etiquette.style.top = (r.top > 44 ? r.top - 40 : r.bottom + 10) + "px"
@@ -235,114 +250,79 @@
     else cadreChoix.style.display = "none"
   }
 
-  // -------------------------------------------------------
+  // =======================================================
   // CHANGEMENT DE MODE
-  // -------------------------------------------------------
+  // =======================================================
+
   function appliquerMode(actif) {
     modeSelection = actif
+    document.documentElement.style.cursor = actif ? "crosshair" : ""
 
     if (actif) {
       var zones = document.querySelectorAll(SELECTEUR).length
-      temoin.textContent =
-        zones > 0
-          ? "Mode modification \u00B7 touchez un \u00e9l\u00e9ment"
-          : "Mode modification \u00B7 aucun \u00e9l\u00e9ment reconnu"
-      temoin.style.display = "block"
-      temoin.style.background = zones > 0 ? "#1E5F8C" : "#B45309"
+      if (zones > 0) {
+        afficherBandeau("Touchez un élément pour le modifier", "#1E5F8C")
+      } else {
+        afficherBandeau("Aucun élément modifiable sur cette page", "#B45309")
+      }
     } else {
-      temoin.style.display = "none"
-    }
-    document.documentElement.style.cursor = actif ? "crosshair" : ""
-    if (!actif) {
+      bandeau.style.display = "none"
       masquerSurvol()
       choisi = null
       cadreChoix.style.display = "none"
     }
   }
 
-  // -------------------------------------------------------
-  // SURVOL (ordinateur)
-  // -------------------------------------------------------
-  document.addEventListener("mousemove", function (e) {
-    if (!modeSelection || !rubriques.length) return
-    var el = cibleDe(e.target, e.clientX, e.clientY)
-    if (el === survole) return
-    survole = el
-    if (!el) return masquerSurvol()
-    surligner(el, "\u270F\uFE0F  " + nomDe(el))
-  })
+  // =======================================================
+  // DESIGNATION D'UN ELEMENT
+  // =======================================================
 
-  document.addEventListener("mouseleave", function () {
-    if (modeSelection) masquerSurvol()
-  })
+  function designer(el) {
+    var chemin = cheminDe(el)
+    if (!chemin) return
 
-  window.addEventListener("scroll", function () {
-    if (!modeSelection) return
-    if (survole) surligner(survole, etiquette.textContent)
+    choisi = el
     montrerChoix()
-  })
+    masquerSurvol()
 
-  window.addEventListener("resize", montrerChoix)
+    envoyer({
+      type: "select",
+      section: chemin.split(".")[0],
+      field: chemin.split(".")[1],
+      label: nomDe(el),
+    })
+  }
 
-  // -------------------------------------------------------
-  // APPUI (telephone) : pas de survol, on montre au contact
-  // -------------------------------------------------------
-  var choisiAuDoigt = 0       // horodatage de la derniere selection au pointeur
+  // =======================================================
+  // GESTES : souris, doigt et stylet au meme endroit
+  // =======================================================
 
+  var depart = null      // position du debut du geste
+  var estUnDoigt = false
 
-  /*
-   * Sur telephone, on ne compte pas sur l'evenement "click" : certains
-   * sites l'interceptent, et iOS ne le declenche pas toujours dans un
-   * cadre. Le relachement du doigt suffit donc a choisir un element —
-   * a condition que le doigt n'ait pas glisse, pour ne pas confondre
-   * un choix avec un defilement.
-   */
-
-  // -------------------------------------------------------
-  // CLIC : retenir l'element, sans quitter la page
-  // -------------------------------------------------------
   document.addEventListener(
-    "click",
+    "pointermove",
     function (e) {
+      // Le survol n'a de sens qu'a la souris
       if (!modeSelection || !rubriques.length) return
-
-      // En mode selection, aucun lien ne doit emmener le client ailleurs
-      e.preventDefault()
-      e.stopPropagation()
+      if (e.pointerType && e.pointerType !== "mouse") return
 
       var el = cibleDe(e.target, e.clientX, e.clientY)
-      if (!el) return
-
-      var chemin = cheminDe(el)
-      if (!chemin) return
-
-      choisi = el
-      montrerChoix()
-      masquerSurvol()
-
-      envoyer({
-        type: "select",
-        section: chemin.split(".")[0],
-        field: chemin.split(".")[1],
-        label: nomDe(el),
-      })
+      if (el === survole) return
+      survole = el
+      if (!el) return masquerSurvol()
+      surligner(el, "\u270F\uFE0F  " + nomDe(el))
     },
     true
   )
-
-
-  // -------------------------------------------------------
-  // POINTEUR : souris, doigt et stylet au meme endroit
-  // Plus fiable que les evenements tactiles dans un cadre,
-  // ou certains navigateurs mobiles ne les transmettent pas.
-  // -------------------------------------------------------
-  var pointeurDepart = null
 
   document.addEventListener(
     "pointerdown",
     function (e) {
       if (!modeSelection || !rubriques.length) return
-      pointeurDepart = { x: e.clientX, y: e.clientY }
+
+      depart = { x: e.clientX, y: e.clientY }
+      estUnDoigt = e.pointerType && e.pointerType !== "mouse"
 
       var el = cibleDe(e.target, e.clientX, e.clientY)
       if (!el) return
@@ -356,39 +336,50 @@
     "pointerup",
     function (e) {
       if (!modeSelection || !rubriques.length) return
-      if (!pointeurDepart) return
+      if (!depart) return
 
-      var glissement = Math.hypot(
-        e.clientX - pointeurDepart.x,
-        e.clientY - pointeurDepart.y
+      var glissement = Math.sqrt(
+        Math.pow(e.clientX - depart.x, 2) + Math.pow(e.clientY - depart.y, 2)
       )
-      pointeurDepart = null
-      if (glissement > 12) return masquerSurvol()   // c'etait un defilement
+      depart = null
+
+      // Le doigt a glisse : c'etait un defilement, pas un choix
+      if (estUnDoigt && glissement > 12) return masquerSurvol()
 
       var el = cibleDe(e.target, e.clientX, e.clientY)
-      if (!el) return
-
-      var chemin = cheminDe(el)
-      if (!chemin) return
-
-      choisiAuDoigt = Date.now()
-      choisi = el
-      montrerChoix()
-      masquerSurvol()
-
-      envoyer({
-        type: "select",
-        section: chemin.split(".")[0],
-        field: chemin.split(".")[1],
-        label: nomDe(el),
-      })
+      if (el) designer(el)
     },
     true
   )
 
-  // -------------------------------------------------------
+  document.addEventListener("pointercancel", function () {
+    depart = null
+    if (modeSelection) masquerSurvol()
+  })
+
+  // Le clic ne sert plus qu'a empecher la navigation
+  document.addEventListener(
+    "click",
+    function (e) {
+      if (!modeSelection || !rubriques.length) return
+      e.preventDefault()
+      e.stopPropagation()
+    },
+    true
+  )
+
+  // Le cadre suit la page qui defile ou change de taille
+  window.addEventListener("scroll", function () {
+    if (!modeSelection) return
+    if (survole) surligner(survole, etiquette.textContent)
+    montrerChoix()
+  })
+  window.addEventListener("resize", montrerChoix)
+
+  // =======================================================
   // MESSAGES VENUS DE MON CMS
-  // -------------------------------------------------------
+  // =======================================================
+
   window.addEventListener("message", function (e) {
     // On identifie l'editeur par la signature de ses messages,
     // pas par son adresse : celle-ci varie selon le deploiement.
@@ -396,7 +387,6 @@
     if (!d || d.source !== "mon-cms") return
 
     if (d.type === "mode") {
-      reponseRecue = true
       appliquerMode(!!d.actif)
       return
     }
@@ -432,28 +422,10 @@
     }
   })
 
-  /**
-   * Annonce sa presence a Mon CMS, et recommence si personne ne repond.
-   *
-   * L'editeur repond en indiquant le mode courant. Sans cette relance,
-   * un cadre recharge par le systeme — ce que font les telephones pour
-   * economiser la memoire — resterait inerte.
-   */
-  var reponseRecue = false
-
-  function seSignaler(essai) {
-    essai = essai || 1
-    envoyer({ type: "ready", page: location.pathname })
-    if (essai < 4) {
-      setTimeout(function () {
-        if (!reponseRecue) seSignaler(essai + 1)
-      }, 1200)
-    }
-  }
-
-  // -------------------------------------------------------
+  // =======================================================
   // CHARGEMENT DES NOMS DE RUBRIQUES ET DE CHAMPS
-  // -------------------------------------------------------
+  // =======================================================
+
   fetch("content.json?t=" + Date.now())
     .then(function (r) { return r.json() })
     .then(function (data) {
@@ -464,9 +436,20 @@
         })
         return s.id
       })
-      seSignaler()
+
+      envoyer({ type: "ready", page: location.pathname })
+
+      // Le pont se signale brievement : sans ce message, c'est qu'il
+      // n'a pas demarre dans le cadre.
+      afficherBandeau(
+        "Éditeur connecté · " +
+          document.querySelectorAll(SELECTEUR).length +
+          " éléments modifiables",
+        "#15803D",
+        4000
+      )
     })
     .catch(function () {
-      /* contenu injoignable : le pont reste inactif */
+      afficherBandeau("Contenu du site introuvable", "#B91C1C", 6000)
     })
 })()
