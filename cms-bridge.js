@@ -334,6 +334,14 @@
       return
     }
 
+    // Contenu pousse par l'editeur : affichage immediat
+    if (d.type === "contenu") {
+      if (typeof window.CMS_APPLIQUER === "function") {
+        window.CMS_APPLIQUER({ sections: d.sections })
+      }
+      return
+    }
+
     if (d.type === "scrollTo") {
       var el =
         (d.field &&
