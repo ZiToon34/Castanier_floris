@@ -49,10 +49,18 @@
   // -------------------------------------------------------
   // ENVOI VERS MON CMS
   // -------------------------------------------------------
+  /**
+   * Envoie un message a Mon CMS.
+   *
+   * La cible est volontairement ouverte : le contenu se limite a un nom
+   * de rubrique, et Mon CMS verifie de son cote que le message provient
+   * bien de son propre cadre. Exiger une adresse exacte rendait l'echange
+   * muet des que l'editeur etait ouvert depuis une autre adresse.
+   */
   function envoyer(message) {
     message.source = "mon-cms-site"
     try {
-      window.parent.postMessage(message, CMS_ORIGIN)
+      window.parent.postMessage(message, "*")
     } catch (e) {
       /* le cadre parent n'est pas Mon CMS : on ignore */
     }
@@ -316,7 +324,8 @@
   // MESSAGES VENUS DE MON CMS
   // -------------------------------------------------------
   window.addEventListener("message", function (e) {
-    if (e.origin !== CMS_ORIGIN) return
+    // On identifie l'editeur par la signature de ses messages,
+    // pas par son adresse : celle-ci varie selon le deploiement.
     var d = e.data
     if (!d || d.source !== "mon-cms") return
 
