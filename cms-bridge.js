@@ -274,18 +274,63 @@
   // -------------------------------------------------------
   // APPUI (telephone) : pas de survol, on montre au contact
   // -------------------------------------------------------
+  var doigtDepart = null      // position du debut du geste
+  var choisiAuDoigt = 0       // horodatage de la derniere selection tactile
+
   document.addEventListener(
     "touchstart",
     function (e) {
       if (!modeSelection || !rubriques.length) return
       var t = e.touches && e.touches[0]
       if (!t) return
+
+      doigtDepart = { x: t.clientX, y: t.clientY }
+
       var el = cibleDe(t.target, t.clientX, t.clientY)
       if (!el) return
       survole = el
       surligner(el, "\u270F\uFE0F  " + nomDe(el))
     },
     { passive: true, capture: true }
+  )
+
+  /*
+   * Sur telephone, on ne compte pas sur l'evenement "click" : certains
+   * sites l'interceptent, et iOS ne le declenche pas toujours dans un
+   * cadre. Le relachement du doigt suffit donc a choisir un element —
+   * a condition que le doigt n'ait pas glisse, pour ne pas confondre
+   * un choix avec un defilement.
+   */
+  document.addEventListener(
+    "touchend",
+    function (e) {
+      if (!modeSelection || !rubriques.length) return
+      var t = e.changedTouches && e.changedTouches[0]
+      if (!t || !doigtDepart) return
+
+      var glissement = Math.hypot(t.clientX - doigtDepart.x, t.clientY - doigtDepart.y)
+      doigtDepart = null
+      if (glissement > 12) return masquerSurvol()   // c'etait un defilement
+
+      var el = cibleDe(t.target, t.clientX, t.clientY)
+      if (!el) return
+
+      var chemin = cheminDe(el)
+      if (!chemin) return
+
+      choisiAuDoigt = Date.now()
+      choisi = el
+      montrerChoix()
+      masquerSurvol()
+
+      envoyer({
+        type: "select",
+        section: chemin.split(".")[0],
+        field: chemin.split(".")[1],
+        label: nomDe(el),
+      })
+    },
+    { capture: true }
   )
 
   // -------------------------------------------------------
