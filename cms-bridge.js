@@ -199,6 +199,7 @@
     document.body.appendChild(cadre)
     document.body.appendChild(cadreChoix)
     document.body.appendChild(etiquette)
+    document.body.appendChild(temoin)
   }
   if (document.body) poser()
   else document.addEventListener("DOMContentLoaded", poser)
@@ -239,6 +240,18 @@
   // -------------------------------------------------------
   function appliquerMode(actif) {
     modeSelection = actif
+
+    if (actif) {
+      var zones = document.querySelectorAll(SELECTEUR).length
+      temoin.textContent =
+        zones > 0
+          ? "Mode modification \u00B7 touchez un \u00e9l\u00e9ment"
+          : "Mode modification \u00B7 aucun \u00e9l\u00e9ment reconnu"
+      temoin.style.display = "block"
+      temoin.style.background = zones > 0 ? "#1E5F8C" : "#B45309"
+    } else {
+      temoin.style.display = "none"
+    }
     document.documentElement.style.cursor = actif ? "crosshair" : ""
     if (!actif) {
       masquerSurvol()
@@ -274,25 +287,8 @@
   // -------------------------------------------------------
   // APPUI (telephone) : pas de survol, on montre au contact
   // -------------------------------------------------------
-  var doigtDepart = null      // position du debut du geste
-  var choisiAuDoigt = 0       // horodatage de la derniere selection tactile
+  var choisiAuDoigt = 0       // horodatage de la derniere selection au pointeur
 
-  document.addEventListener(
-    "touchstart",
-    function (e) {
-      if (!modeSelection || !rubriques.length) return
-      var t = e.touches && e.touches[0]
-      if (!t) return
-
-      doigtDepart = { x: t.clientX, y: t.clientY }
-
-      var el = cibleDe(t.target, t.clientX, t.clientY)
-      if (!el) return
-      survole = el
-      surligner(el, "\u270F\uFE0F  " + nomDe(el))
-    },
-    { passive: true, capture: true }
-  )
 
   /*
    * Sur telephone, on ne compte pas sur l'evenement "click" : certains
@@ -301,37 +297,6 @@
    * a condition que le doigt n'ait pas glisse, pour ne pas confondre
    * un choix avec un defilement.
    */
-  document.addEventListener(
-    "touchend",
-    function (e) {
-      if (!modeSelection || !rubriques.length) return
-      var t = e.changedTouches && e.changedTouches[0]
-      if (!t || !doigtDepart) return
-
-      var glissement = Math.hypot(t.clientX - doigtDepart.x, t.clientY - doigtDepart.y)
-      doigtDepart = null
-      if (glissement > 12) return masquerSurvol()   // c'etait un defilement
-
-      var el = cibleDe(t.target, t.clientX, t.clientY)
-      if (!el) return
-
-      var chemin = cheminDe(el)
-      if (!chemin) return
-
-      choisiAuDoigt = Date.now()
-      choisi = el
-      montrerChoix()
-      masquerSurvol()
-
-      envoyer({
-        type: "select",
-        section: chemin.split(".")[0],
-        field: chemin.split(".")[1],
-        label: nomDe(el),
-      })
-    },
-    { capture: true }
-  )
 
   // -------------------------------------------------------
   // CLIC : retenir l'element, sans quitter la page
@@ -365,6 +330,62 @@
     true
   )
 
+
+  // -------------------------------------------------------
+  // POINTEUR : souris, doigt et stylet au meme endroit
+  // Plus fiable que les evenements tactiles dans un cadre,
+  // ou certains navigateurs mobiles ne les transmettent pas.
+  // -------------------------------------------------------
+  var pointeurDepart = null
+
+  document.addEventListener(
+    "pointerdown",
+    function (e) {
+      if (!modeSelection || !rubriques.length) return
+      pointeurDepart = { x: e.clientX, y: e.clientY }
+
+      var el = cibleDe(e.target, e.clientX, e.clientY)
+      if (!el) return
+      survole = el
+      surligner(el, "\u270F\uFE0F  " + nomDe(el))
+    },
+    true
+  )
+
+  document.addEventListener(
+    "pointerup",
+    function (e) {
+      if (!modeSelection || !rubriques.length) return
+      if (!pointeurDepart) return
+
+      var glissement = Math.hypot(
+        e.clientX - pointeurDepart.x,
+        e.clientY - pointeurDepart.y
+      )
+      pointeurDepart = null
+      if (glissement > 12) return masquerSurvol()   // c'etait un defilement
+
+      var el = cibleDe(e.target, e.clientX, e.clientY)
+      if (!el) return
+
+      var chemin = cheminDe(el)
+      if (!chemin) return
+
+      choisiAuDoigt = Date.now()
+      choisi = el
+      montrerChoix()
+      masquerSurvol()
+
+      envoyer({
+        type: "select",
+        section: chemin.split(".")[0],
+        field: chemin.split(".")[1],
+        label: nomDe(el),
+      })
+    },
+    true
+  )
+
   // -------------------------------------------------------
   // MESSAGES VENUS DE MON CMS
   // -------------------------------------------------------
@@ -375,6 +396,7 @@
     if (!d || d.source !== "mon-cms") return
 
     if (d.type === "mode") {
+      reponseRecue = true
       appliquerMode(!!d.actif)
       return
     }
@@ -410,6 +432,25 @@
     }
   })
 
+  /**
+   * Annonce sa presence a Mon CMS, et recommence si personne ne repond.
+   *
+   * L'editeur repond en indiquant le mode courant. Sans cette relance,
+   * un cadre recharge par le systeme — ce que font les telephones pour
+   * economiser la memoire — resterait inerte.
+   */
+  var reponseRecue = false
+
+  function seSignaler(essai) {
+    essai = essai || 1
+    envoyer({ type: "ready", page: location.pathname })
+    if (essai < 4) {
+      setTimeout(function () {
+        if (!reponseRecue) seSignaler(essai + 1)
+      }, 1200)
+    }
+  }
+
   // -------------------------------------------------------
   // CHARGEMENT DES NOMS DE RUBRIQUES ET DE CHAMPS
   // -------------------------------------------------------
@@ -423,7 +464,7 @@
         })
         return s.id
       })
-      envoyer({ type: "ready", page: location.pathname })
+      seSignaler()
     })
     .catch(function () {
       /* contenu injoignable : le pont reste inactif */
