@@ -212,8 +212,70 @@ function appliquerListes() {
   })
 }
 
+
+/**
+ * Avis de suspension.
+ *
+ * Quand le compte du client n'est plus actif, le fichier de contenu
+ * porte un indicateur "pause". Le site reste en place mais devient
+ * inaccessible aux visiteurs, derriere un avis qu'on ne peut fermer.
+ */
+function afficherAvisDePause() {
+  if (document.getElementById("cms-pause")) return
+
+  var voile = document.createElement("div")
+  voile.id = "cms-pause"
+  voile.setAttribute("role", "alertdialog")
+  voile.style.cssText = [
+    "position:fixed", "inset:0", "z-index:2147483647",
+    "background:rgba(15,23,42,.92)",
+    "display:flex", "align-items:center", "justify-content:center",
+    "padding:24px",
+    "font-family:system-ui,-apple-system,'Segoe UI',sans-serif",
+  ].join(";")
+
+  var boite = document.createElement("div")
+  boite.style.cssText = [
+    "max-width:440px", "width:100%",
+    "background:#fff", "border-radius:14px",
+    "padding:32px 28px", "text-align:center",
+    "box-shadow:0 24px 60px rgba(0,0,0,.45)",
+  ].join(";")
+
+  boite.innerHTML =
+    '<p style="font-size:34px;margin:0 0 14px">\u23F8\uFE0F</p>' +
+    '<h2 style="font-size:20px;margin:0 0 12px;color:#0F172A">' +
+    "Site momentanement indisponible</h2>" +
+    '<p style="font-size:14.5px;line-height:1.6;color:#475569;margin:0">' +
+    "Ce site est temporairement suspendu. Merci de revenir plus tard, " +
+    "ou de contacter directement l'etablissement.</p>"
+
+  voile.appendChild(boite)
+  document.body.appendChild(voile)
+
+  // Le contenu derriere ne doit pas defiler
+  document.documentElement.style.overflow = "hidden"
+  document.body.style.overflow = "hidden"
+}
+
+/** Retire l'avis, si le compte redevient actif sans rechargement */
+function retirerAvisDePause() {
+  var v = document.getElementById("cms-pause")
+  if (v) v.remove()
+  document.documentElement.style.overflow = ""
+  document.body.style.overflow = ""
+}
+
 /** Applique tout le contenu a la page */
 function appliquerContenu() {
+  // Compte suspendu : le site reste en place mais devient inaccessible
+  if (CMS && CMS.pause === true) {
+    if (document.body) afficherAvisDePause()
+    else document.addEventListener("DOMContentLoaded", afficherAvisDePause)
+  } else {
+    retirerAvisDePause()
+  }
+
   appliquerTextes()
   appliquerImages()
   appliquerLiens()
