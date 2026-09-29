@@ -16,6 +16,8 @@
      data-cms-wa="rubrique.champ"       lien WhatsApp
      data-cms-gallery="rubrique.champ"  galerie de photos
      data-cms-list="rubrique.champ"     liste de lignes
+     data-cms-repeat="rubrique.champ"   repeteur, a partir d'un gabarit
+                                        <template data-cms-repeat-modele>
 
    Pour les listes, data-cms-list-style precise la mise en forme :
      tarif      ligne intitule / prix (page Infos)
@@ -266,6 +268,176 @@ function retirerAvisDePause() {
   document.body.style.overflow = ""
 }
 
+
+// ---------------------------------------------------------
+// REPETEURS : actualites, evenements, resultats...
+// ---------------------------------------------------------
+
+/** Champ complet (et pas seulement sa valeur) a partir de "rubrique.champ" */
+function champComplet(chemin) {
+  if (!CMS || !chemin) return null
+  const [rubriqueId, champId] = chemin.split(".")
+  const rubrique = CMS.sections.find((s) => s.id === rubriqueId)
+  return rubrique ? rubrique.fields.find((f) => f.id === champId) || null : null
+}
+
+/** "2026-07-14" -> "14 juillet 2026", sans dependre des reglages du navigateur */
+function dateEnClair(iso) {
+  const mois = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
+                "août", "septembre", "octobre", "novembre", "décembre"]
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "")
+  return m ? `${Number(m[3])} ${mois[Number(m[2]) - 1]} ${m[1]}` : ""
+}
+
+/** Date du jour au format AAAA-MM-JJ, heure locale */
+function aujourdhui() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+}
+
+/**
+ * Photos d'une entree, toujours sous forme de liste.
+ * Accepte l'ancien format (une seule photo en texte) comme le nouveau.
+ */
+function photosDe(valeurChamp) {
+  if (Array.isArray(valeurChamp)) return valeurChamp.filter(Boolean)
+  return valeurChamp ? [valeurChamp] : []
+}
+
+/**
+ * Remplit un exemplaire du gabarit avec une entree.
+ *
+ * Attributs reconnus a l'interieur du gabarit :
+ *   data-cms-item="cle"             texte de l'entree
+ *   data-cms-item-format="date"     affiche la date en toutes lettres
+ *   data-cms-item-si="cle"          retire l'element si la valeur est vide
+ *   data-cms-item-img="cle"         photo unique (la premiere d'une liste)
+ *   data-cms-item-galerie="cle"     couverture + vignettes des suivantes
+ */
+function remplirEntree(noeud, entree) {
+  // Elements conditionnels d'abord : inutile de remplir ce qui disparait
+  noeud.querySelectorAll("[data-cms-item-si]").forEach((el) => {
+    const v = entree[el.dataset.cmsItemSi]
+    if (v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length)) {
+      el.remove()
+    }
+  })
+
+  noeud.querySelectorAll("[data-cms-item]").forEach((el) => {
+    const v = entree[el.dataset.cmsItem]
+    if (el.dataset.cmsItemFormat === "date") {
+      el.textContent = dateEnClair(v)
+      if (el.tagName === "TIME" && v) el.setAttribute("datetime", v)
+    } else {
+      el.textContent = v == null ? "" : String(v)
+    }
+  })
+
+  noeud.querySelectorAll("[data-cms-item-img]").forEach((el) => {
+    const photos = photosDe(entree[el.dataset.cmsItemImg])
+    if (!photos.length) return el.remove()
+    el.src = img(photos[0])
+  })
+
+  noeud.querySelectorAll("[data-cms-item-galerie]").forEach((el) => {
+    const cle = el.dataset.cmsItemGalerie
+    // Une entree enregistree avant le passage a la galerie garde sa photo
+    let photos = photosDe(entree[cle])
+    if (!photos.length) photos = photosDe(entree[cle.replace(/s$/, "")])
+    if (!photos.length) return el.remove()
+
+    const titre = echapper(entree.titre || "Photo")
+    let html = `<img class="actu-photo" src="${img(photos[0])}" alt="${titre}" loading="lazy" decoding="async">`
+    if (photos.length > 1) {
+      html += `<div class="actu-vignettes">`
+      html += photos
+        .slice(1)
+        .map((p, i) => `<img src="${img(p)}" alt="${titre} — photo ${i + 2}" loading="lazy" decoding="async">`)
+        .join("")
+      html += `</div>`
+    }
+    el.innerHTML = html
+  })
+}
+
+/**
+ * Duplique un gabarit pour chaque entree d'un repeteur.
+ *
+ * Attributs du conteneur :
+ *   data-cms-repeat="rubrique.champ"   le repeteur a afficher
+ *   data-cms-repeat-date="cle"         sous-champ portant la date
+ *   data-cms-repeat-actif="cle"        sous-champ « afficher sur le site »
+ *   data-cms-repeat-quand=             futur | passe | tous
+ *   data-cms-repeat-tri=               ancien | recent
+ *   data-cms-repeat-vide="texte"       message si rien a afficher
+ *
+ * Les entrees plus anciennes que la periode du champ (cle "annees",
+ * 2 ans par defaut) sont conservees mais n'apparaissent plus.
+ */
+function appliquerRepeteurs() {
+  document.querySelectorAll("[data-cms-repeat]").forEach((conteneur) => {
+    const champ = champComplet(conteneur.dataset.cmsRepeat)
+    const modele = conteneur.querySelector("template[data-cms-repeat-modele]")
+    if (!champ || !modele) return
+
+    // Relancer l'affichage ne doit pas dupliquer les entrees deja posees
+    conteneur.querySelectorAll("[data-cms-genere]").forEach((n) => n.remove())
+
+    const cleDate = conteneur.dataset.cmsRepeatDate
+    const cleActif = conteneur.dataset.cmsRepeatActif
+    const quand = conteneur.dataset.cmsRepeatQuand || "tous"
+    const tri = conteneur.dataset.cmsRepeatTri || "recent"
+    const jour = aujourdhui()
+    const annees = Number(champ.annees) || 2
+    const anneeMin = new Date().getFullYear() - (annees - 1)
+
+    let entrees = (Array.isArray(champ.value) ? champ.value : []).filter((e) => {
+      if (!e) return false
+      if (cleActif && e[cleActif] === false) return false
+
+      const d = cleDate ? e[cleDate] : ""
+      const datee = /^\d{4}-\d{2}-\d{2}$/.test(d || "")
+
+      // Une entree sans contenu (juste ajoutee) ne s'affiche pas
+      const rempli = Object.keys(e).some(
+        (k) => k !== cleActif && k !== cleDate && e[k] && (!Array.isArray(e[k]) || e[k].length)
+      )
+      if (!rempli) return false
+
+      if (datee && Number(d.slice(0, 4)) < anneeMin) return false
+      // Sans date, l'entree est consideree comme a venir
+      if (quand === "futur") return !datee || d >= jour
+      if (quand === "passe") return datee && d < jour
+      return true
+    })
+
+    if (cleDate) {
+      entrees.sort((a, b) => {
+        const da = a[cleDate] || "9999"
+        const db = b[cleDate] || "9999"
+        return tri === "ancien" ? da.localeCompare(db) : db.localeCompare(da)
+      })
+    }
+
+    if (!entrees.length) {
+      const vide = document.createElement("p")
+      vide.className = "cms-vide"
+      vide.setAttribute("data-cms-genere", "")
+      vide.textContent = conteneur.dataset.cmsRepeatVide || ""
+      if (vide.textContent) conteneur.appendChild(vide)
+      return
+    }
+
+    entrees.forEach((entree) => {
+      const copie = modele.content.cloneNode(true)
+      remplirEntree(copie, entree)
+      // Chaque element racine est marque pour pouvoir etre retire
+      Array.from(copie.children).forEach((n) => n.setAttribute("data-cms-genere", ""))
+      conteneur.appendChild(copie)
+    })
+  })
+}
+
 /** Applique tout le contenu a la page */
 function appliquerContenu() {
   // Compte suspendu : le site reste en place mais devient inaccessible
@@ -282,6 +454,7 @@ function appliquerContenu() {
   appliquerCadres()
   appliquerGaleries()
   appliquerListes()
+  appliquerRepeteurs()
 }
 
 // ---------------------------------------------------------

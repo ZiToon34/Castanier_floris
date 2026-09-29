@@ -22,8 +22,18 @@
 (function () {
   "use strict"
 
-  // Page affichee normalement (pas dans un cadre) : on ne fait rien
-  if (window.self === window.top) return
+  /*
+   * Le pont ne s'active que dans l'un de ces deux cas :
+   *
+   *   - la page est affichee dans le cadre d'apercu de Mon CMS (web) ;
+   *   - la page est affichee dans l'application mobile Mon CMS.
+   *
+   * Pour un visiteur ordinaire, ni l'un ni l'autre : on ne fait rien.
+   */
+  // window.ReactNativeWebView n'existe que dans une vue d'application :
+  // c'est le signal le plus fiable, present des le demarrage de la page.
+  var DANS_APP = !!window.ReactNativeWebView
+  if (window.self === window.top && !DANS_APP) return
 
   /* -------------------------------------------------------
      Attributs poses sur les pages. Leur valeur vaut
@@ -36,6 +46,8 @@
     "data-cms-text", "data-cms-html", "data-cms-img", "data-cms-bg",
     "data-cms-href", "data-cms-tel", "data-cms-mail", "data-cms-wa",
     "data-cms-gallery", "data-cms-list", "data-cms-src", "data-cms-zone",
+    // Liste d'entrees dupliquees a partir d'un gabarit (evenements...)
+    "data-cms-repeat",
   ]
   var SELECTEUR = ATTRIBUTS.map(function (a) { return "[" + a + "]" }).join(",")
 
@@ -60,9 +72,14 @@
   function envoyer(message) {
     message.source = "mon-cms-site"
     try {
-      window.parent.postMessage(message, "*")
+      if (DANS_APP) {
+        // L'application n'accepte que du texte
+        window.ReactNativeWebView.postMessage(JSON.stringify(message))
+      } else {
+        window.parent.postMessage(message, "*")
+      }
     } catch (e) {
-      /* le cadre parent n'est pas Mon CMS */
+      /* hote injoignable : on ignore */
     }
   }
 
@@ -380,10 +397,12 @@
   // MESSAGES VENUS DE MON CMS
   // =======================================================
 
-  window.addEventListener("message", function (e) {
-    // On identifie l'editeur par la signature de ses messages,
-    // pas par son adresse : celle-ci varie selon le deploiement.
-    var d = e.data
+  /**
+   * Traite un message de l'editeur, quelle que soit sa provenance.
+   * On identifie l'editeur par la signature de ses messages, pas par
+   * son adresse : celle-ci varie selon le deploiement.
+   */
+  function traiter(d) {
     if (!d || d.source !== "mon-cms") return
 
     if (d.type === "mode") {
@@ -420,7 +439,21 @@
         }
       }, 2200)
     }
+  }
+
+  // Depuis le CMS web : message classique entre fenetres
+  window.addEventListener("message", function (e) {
+    traiter(e.data)
   })
+
+  /*
+   * Depuis l'application mobile : elle appelle directement cette
+   * fonction. Plus fiable que les messages entre fenetres, dont le
+   * comportement differe entre iPhone et Android.
+   */
+  window.CMS_RECEVOIR = function (d) {
+    traiter(d)
+  }
 
   // =======================================================
   // CHARGEMENT DES NOMS DE RUBRIQUES ET DE CHAMPS
